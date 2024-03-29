@@ -98,7 +98,8 @@ jQuery(function ($) {
     reset_section_available_connections();
 
     reset_section(true, $('#m_main_col_connection_manage'), function () {
-      reset_section_connection_manage(moment().unix(), true, '', '');
+      let timestamp = new Date().getTime();
+      reset_section_connection_manage(timestamp, true, '', '');
     });
 
     reset_section(false, $('#m_main_col_connection_type_details'), function () {});
