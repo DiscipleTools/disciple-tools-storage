@@ -3,9 +3,9 @@ if ( !defined( 'ABSPATH' ) ) { exit; } // Exit if accessed directly.
 
 
 /**
- * Class Disciple_Tools_Plugin_Starter_Template_Magic_User_App
+ * Class Disciple_Tools_Media_Magic_User_App
  */
-class Disciple_Tools_Plugin_Starter_Template_Magic_Login_User_App extends DT_Magic_Url_Base {
+class Disciple_Tools_Media_Magic_Login_User_App extends DT_Magic_Url_Base {
 
     public $page_title = 'Starter - Magic Links - Login User App';
     public $page_description = 'Login User App - Magic Links.';
@@ -170,7 +170,7 @@ class Disciple_Tools_Plugin_Starter_Template_Magic_Login_User_App extends DT_Mag
                 'nonce' => wp_create_nonce( 'wp_rest' ),
                 'parts' => $this->parts,
                 'translations' => [
-                    'add' => __( 'Add Magic', 'disciple-tools-plugin-starter-template' ),
+                    'add' => __( 'Add Magic', 'disciple-tools-media' ),
                 ],
             ]) ?>][0]
 
@@ -377,4 +377,4 @@ class Disciple_Tools_Plugin_Starter_Template_Magic_Login_User_App extends DT_Mag
         return $data;
     }
 }
-Disciple_Tools_Plugin_Starter_Template_Magic_Login_User_App::instance();
+Disciple_Tools_Media_Magic_Login_User_App::instance();
