@@ -67,7 +67,7 @@ function dt_media_connections_obj_upload( $response, $media_connection_id, $key,
                 $config = (array) $media_connection[$media_connection['type']];
                 if ( isset( $config['access_key'], $config['secret_access_key'], $config['region'], $config['bucket'], $config['endpoint'] ) ) {
 
-                    require_once( get_template_directory() . '/vendor/autoload.php' );
+                    require_once( 'vendor/autoload.php' );
 
                     // Instantiate required aws s3 client object.
                     $s3 = new Aws\S3\S3Client( [
@@ -185,7 +185,7 @@ function dt_media_connections_obj_url( $url, $media_connection_id, $key, $args =
 
                     try {
 
-                        require_once( get_template_directory() . '/vendor/autoload.php' );
+                        require_once( 'vendor/autoload.php' );
 
                         // Instantiate required aws s3 client object.
                         $s3 = new Aws\S3\S3Client( [
