@@ -33,6 +33,16 @@ class Disciple_Tools_Media_API {
         ];
     }
 
+    public static function generate_random_string( $length = 16 ): string {
+        $random_string = '';
+        $keys = array_merge( range( 0, 9 ), range( 'a', 'z' ), range( 'A', 'Z' ) );
+        for ( $i = 0; $i < $length; $i++ ){
+            $random_string .= $keys[mt_rand( 0, count( $keys ) - 1 )];
+        }
+
+        return $random_string;
+    }
+
     public static function fetch_option_connection_objs(): object {
         $option = get_option( self::$option_dt_media_connection_objects );
 
