@@ -79,78 +79,104 @@ function dt_media_connections_obj_upload( $response, $media_connection_id, $key_
 
                     require_once( 'vendor/autoload.php' );
 
-                    // Ensure endpoint reference has the correct protocol schema.
-                    $endpoint = Disciple_Tools_Media_API::validate_url( $config['endpoint'] );
-
-                    // Instantiate required aws s3 client object.
-                    $s3 = new Aws\S3\S3Client( [
-                        'region' => $config['region'],
-                        'version' => 'latest',
-                        'credentials' => [
-                            'key' => $config['access_key'],
-                            'secret' => $config['secret_access_key']
-                        ],
-                        'endpoint' => $endpoint
-                    ] );
+                    $s3 = null;
+                    $response = true;
+                    $upload_id = null;
                     $bucket = $config['bucket'];
 
                     // Generate complete file key name to be used moving forward.
-                    $key_name = $key;
+                    $key_name = ( isset( $media_connection_type['prefix_bucket_name_to_obj_key'] ) && $media_connection_type['prefix_bucket_name_to_obj_key'] ) ? ( $bucket .'/'. $key ) : $key;
 
-                    // Upload file in parts, to better manage memory leaks.
-                    $result = $s3->createMultipartUpload( [
-                        'Bucket' => $bucket,
-                        'Key' => $key_name,
-                        // 'StorageClass' => 'REDUCED_REDUNDANCY', // NB: Currently not supported by Backblaze
-                        // 'ACL' => 'public-read', // NB: Currently not supported by Backblaze
-                        'ContentType' => $upload['type'] ?? '',
-                        'Metadata' => []
-                    ] );
-                    $upload_id = $result['UploadId'];
+                    // Ensure endpoint reference has the correct protocol schema.
+                    $endpoint = Disciple_Tools_Media_API::validate_url( $config['endpoint'] );
 
-                    $parts = [];
                     try {
 
-                        // Start to upload file in partial chunks.
-                        $filename = $upload['tmp_name'] ?? '';
-                        $file = fopen( $filename, 'r' );
-                        $part_number = 1;
-                        while ( !feof( $file ) ) {
-                            $result = $s3->uploadPart( [
-                                'Bucket' => $bucket,
-                                'Key' => $key_name,
-                                'UploadId' => $upload_id,
-                                'PartNumber' => $part_number,
-                                'Body' => fread( $file, 5 * 1024 * 1024 ),
-                            ] );
+                        // Instantiate required aws s3 client object.
+                        $s3 = new Aws\S3\S3Client( [
+                            'region' => $config['region'],
+                            'version' => 'latest',
+                            'credentials' => [
+                                'key' => $config['access_key'],
+                                'secret' => $config['secret_access_key']
+                            ],
+                            'endpoint' => $endpoint
+                        ] );
 
-                            $parts['Parts'][$part_number] = [
-                                'PartNumber' => $part_number,
-                                'ETag' => $result['ETag'],
-                            ];
 
-                            // Increment part count and force garbage collection, to better manage memory.
-                            $part_number++;
-                            gc_collect_cycles();
-                        }
-                        fclose( $file );
-
-                    } catch ( Exception $e ) {
-                        $result = $s3->abortMultipartUpload( [
+                        // Upload file in parts, to better manage memory leaks.
+                        $result = $s3->createMultipartUpload( [
                             'Bucket' => $bucket,
                             'Key' => $key_name,
-                            'UploadId' => $upload_id
+                            // 'StorageClass' => 'REDUCED_REDUNDANCY', // NB: Currently not supported by Backblaze
+                            // 'ACL' => 'public-read', // NB: Currently not supported by Backblaze
+                            'ContentType' => $upload['type'] ?? '',
+                            'Metadata' => []
                         ] );
+                        $upload_id = $result['UploadId'];
+
+                    } catch ( Exception $e ) {
+                        $response = false;
                     }
 
-                    // Complete the multipart upload.
-                    $result = $s3->completeMultipartUpload( [
-                        'Bucket' => $bucket,
-                        'Key' => $key_name,
-                        'UploadId' => $upload_id,
-                        'MultipartUpload' => $parts,
-                    ] );
-                    $response = $result['Key'] ?? false;
+                    // Ensure no previous upload exceptions have been encountered.
+                    if ( $response !== false ) {
+                        $parts = [];
+
+                        try {
+
+                            // Start to upload file in partial chunks.
+                            $filename = $upload['tmp_name'] ?? '';
+                            $file = fopen( $filename, 'r' );
+                            $part_number = 1;
+                            while (!feof( $file )){
+                                $result = $s3->uploadPart( [
+                                    'Bucket' => $bucket,
+                                    'Key' => $key_name,
+                                    'UploadId' => $upload_id,
+                                    'PartNumber' => $part_number,
+                                    'Body' => fread( $file, 5 * 1024 * 1024 ),
+                                ] );
+
+                                $parts['Parts'][$part_number] = [
+                                    'PartNumber' => $part_number,
+                                    'ETag' => $result['ETag'],
+                                ];
+
+                                // Increment part count and force garbage collection, to better manage memory.
+                                $part_number++;
+                                gc_collect_cycles();
+                            }
+                            fclose( $file );
+
+                        } catch (Exception $e) {
+                            $response = false;
+                            $result = $s3->abortMultipartUpload( [
+                                'Bucket' => $bucket,
+                                'Key' => $key_name,
+                                'UploadId' => $upload_id
+                            ] );
+                        }
+
+                        // Ensure no previous upload exceptions have been encountered.
+                        if ( $response !== false ) {
+
+                            try {
+
+                                // Complete the multipart upload.
+                                $result = $s3->completeMultipartUpload( [
+                                    'Bucket' => $bucket,
+                                    'Key' => $key_name,
+                                    'UploadId' => $upload_id,
+                                    'MultipartUpload' => $parts,
+                                ] );
+                                $response = $result['Key'] ?? false;
+
+                            } catch (Exception $e) {
+                                $response = false;
+                            }
+                        }
+                    }
                 }
                 break;
             default:
@@ -201,7 +227,7 @@ function dt_media_connections_obj_url( $url, $media_connection_id, $key, $args =
                         $bucket = $config['bucket'];
 
                         // Generate complete file key name to be used moving forward.
-                        $key_name = $key;
+                        $key_name = ( isset( $media_connection_type['prefix_bucket_name_to_obj_key'] ) && $media_connection_type['prefix_bucket_name_to_obj_key'] ) ? ( $bucket .'/'. $key ) : $key;
 
                         // Obtain GetObject command handle.
                         $cmd = $s3->getCommand( 'GetObject', [

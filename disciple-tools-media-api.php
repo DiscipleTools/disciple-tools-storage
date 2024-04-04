@@ -16,18 +16,21 @@ class Disciple_Tools_Media_API {
                 'key' => 'aws',
                 'api' => 's3',
                 'label' => 'AWS S3',
+                'prefix_bucket_name_to_obj_key' => false,
                 'enabled' => true
             ],
             'backblaze' => [
                 'key' => 'backblaze',
                 'api' => 's3',
                 'label' => 'Backblaze',
+                'prefix_bucket_name_to_obj_key' => false,
                 'enabled' => true
             ],
             'minio' => [
                 'key' => 'minio',
                 'api' => 's3',
                 'label' => 'MinIO',
+                'prefix_bucket_name_to_obj_key' => true,
                 'enabled' => true
             ]
         ];
