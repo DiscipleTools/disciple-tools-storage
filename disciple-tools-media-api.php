@@ -43,6 +43,18 @@ class Disciple_Tools_Media_API {
         return $random_string;
     }
 
+    public static function validate_url( $url ): string {
+        if ( !filter_var( $url, FILTER_VALIDATE_URL ) ) {
+            $http = 'http://';
+            $https = 'https://';
+            if ( ( substr( $url, 0, strlen( $http ) ) !== $http ) && ( substr( $url, 0, strlen( $https ) ) !== $https ) ) {
+                $url = $https . trim( $url );
+            }
+        }
+
+        return $url;
+    }
+
     public static function fetch_option_connection_objs(): object {
         $option = get_option( self::$option_dt_media_connection_objects );
 

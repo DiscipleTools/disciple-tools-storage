@@ -79,6 +79,9 @@ function dt_media_connections_obj_upload( $response, $media_connection_id, $key_
 
                     require_once( 'vendor/autoload.php' );
 
+                    // Ensure endpoint reference has the correct protocol schema.
+                    $endpoint = Disciple_Tools_Media_API::validate_url( $config['endpoint'] );
+
                     // Instantiate required aws s3 client object.
                     $s3 = new Aws\S3\S3Client( [
                         'region' => $config['region'],
@@ -87,7 +90,7 @@ function dt_media_connections_obj_upload( $response, $media_connection_id, $key_
                             'key' => $config['access_key'],
                             'secret' => $config['secret_access_key']
                         ],
-                        'endpoint' => $config['endpoint']
+                        'endpoint' => $endpoint
                     ] );
                     $bucket = $config['bucket'];
 
@@ -182,6 +185,9 @@ function dt_media_connections_obj_url( $url, $media_connection_id, $key, $args =
 
                         require_once( 'vendor/autoload.php' );
 
+                        // Ensure endpoint reference has the correct protocol schema.
+                        $endpoint = Disciple_Tools_Media_API::validate_url( $config['endpoint'] );
+
                         // Instantiate required aws s3 client object.
                         $s3 = new Aws\S3\S3Client( [
                             'region' => $config['region'],
@@ -190,7 +196,7 @@ function dt_media_connections_obj_url( $url, $media_connection_id, $key, $args =
                                 'key' => $config['access_key'],
                                 'secret' => $config['secret_access_key']
                             ],
-                            'endpoint' => $config['endpoint']
+                            'endpoint' => $endpoint
                         ] );
                         $bucket = $config['bucket'];
 
@@ -210,7 +216,7 @@ function dt_media_connections_obj_url( $url, $media_connection_id, $key, $args =
                         $url = (string) $request->getUri();
 
                     } catch ( Exception $e ) {
-                        $url = null;
+                        $url = '';
                     }
                 }
                 break;

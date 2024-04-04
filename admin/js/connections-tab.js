@@ -250,6 +250,20 @@ jQuery(function ($) {
     `;
   }
 
+  function validate_url( url ) {
+    try {
+
+      // Convert to url object.
+      const url_obj = new URL(url);
+
+      // Ensure correct protocols have been specified.
+      return ( ( url_obj.protocol === 'http:' ) || ( url_obj.protocol === 'https:' ) ) ?  url : ( 'https://' + url );
+
+    } catch (err) {
+      return 'https://' + url;
+    }
+  }
+
   function handle_connection_test_for_s3() {
 
     // Trigger spinner!
@@ -263,7 +277,7 @@ jQuery(function ($) {
       const secret_access_key = $('#connection_type_s3_secret_access_key').val();
       const region = $('#connection_type_s3_region').val();
       const bucket = $('#connection_type_s3_bucket').val();
-      const endpoint = $('#connection_type_s3_endpoint').val();
+      const endpoint = validate_url( $('#connection_type_s3_endpoint').val() );
 
       // Create aws s3 object.
       const s3 = new AWS.S3({
@@ -274,7 +288,6 @@ jQuery(function ($) {
         },
         endpoint: endpoint
       });
-      console.log( s3 );
 
       // A successful listing of buckets, shall constitute as a validated connection.
       s3.listBuckets({}, function(err, data) {
@@ -283,7 +296,6 @@ jQuery(function ($) {
           $(test_but_content).removeClass('loading-spinner active').text('Connection Failed!');
 
         } else {
-          console.log(data);
 
           // Ensure configured bucket is also listed.
           let valid_connection = false;
