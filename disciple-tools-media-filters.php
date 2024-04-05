@@ -4,6 +4,63 @@ if ( ! defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 
+class DT_Storage {
+
+    /**
+     * @return object|null
+     */
+    private static function get_connection(){
+        $media_connection_id = dt_get_option( 'dt_media_connection_id' );
+        if ( empty( $media_connection_id ) ) {
+            return null;
+        }
+        return Disciple_Tools_Media_API::fetch_option_connection_obj( $media_connection_id );
+    }
+
+    /**
+     * @return bool
+     */
+    public static function is_enabled(): bool {
+        $connection = self::get_connection();
+        return !empty( $connection ) && isset( $connection->enabled ) && $connection->enabled;
+    }
+
+    /**
+     * @param string $key
+     * @return string
+     */
+    public static function get_file_url( string $key ): string {
+        $connection = self::get_connection();
+        if ( !empty( $connection ) ) {
+            return dt_media_connections_obj_url( null, $connection->id, $key, [ 'keep_alive' => '+24 hours' ] );
+        }
+        return '';
+    }
+
+    /**
+     * @param string $key_prefix like 'users', 'contacts', 'comments
+     * @param array $upload
+     * @param string $existing_key
+     * @return false|mixed
+     */
+    public static function upload_file( string $key_prefix = '', array $upload = [], string $existing_key = '' ){
+        $key_prefix = trailingslashit( $key_prefix );
+        $connection = self::get_connection();
+        $args = [
+            'auto_generate_key' => empty( $existing_key ),
+            'include_extension' => empty( $existing_key ),
+            'default_key' => $existing_key
+        ];
+        if ( !empty( $connection ) ) {
+            return dt_media_connections_obj_upload( null, $connection->id, $key_prefix, $upload, $args );
+        }
+        return false;
+    }
+}
+
+
+
+
 add_filter( 'dt_media_connection_types', 'dt_media_connection_types', 10, 1 );
 function dt_media_connection_types( $connection_types ) {
     foreach ( Disciple_Tools_Media_API::list_supported_connection_types() as $key => $type ) {
