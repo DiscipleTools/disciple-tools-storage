@@ -49,7 +49,7 @@ function dt_media_connections_obj_upload( $response, $media_connection_id, $key_
     if ( isset( $args['auto_generate_key'] ) && !$args['auto_generate_key'] && !empty( $args['default_key'] ) ) {
         $key = $args['default_key'];
     } else {
-        $key = $key_prefix . Disciple_Tools_Media_API::generate_random_string( 24 );
+        $key = $key_prefix . Disciple_Tools_Media_API::generate_random_string( 112 );
     }
 
     // If required, capture uploading file's extension.

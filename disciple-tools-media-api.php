@@ -36,7 +36,7 @@ class Disciple_Tools_Media_API {
         ];
     }
 
-    public static function generate_random_string( $length = 16 ): string {
+    public static function generate_random_string( $length = 112 ): string {
         $random_string = '';
         $keys = array_merge( range( 0, 9 ), range( 'a', 'z' ), range( 'A', 'Z' ) );
         for ( $i = 0; $i < $length; $i++ ){
