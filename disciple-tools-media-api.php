@@ -16,21 +16,46 @@ class Disciple_Tools_Media_API {
                 'key' => 'aws',
                 'api' => 's3',
                 'label' => 'AWS S3',
+                'prefix_bucket_name_to_obj_key' => false,
                 'enabled' => true
             ],
             'backblaze' => [
                 'key' => 'backblaze',
                 'api' => 's3',
                 'label' => 'Backblaze',
+                'prefix_bucket_name_to_obj_key' => false,
                 'enabled' => true
             ],
             'minio' => [
                 'key' => 'minio',
                 'api' => 's3',
                 'label' => 'MinIO',
+                'prefix_bucket_name_to_obj_key' => true,
                 'enabled' => true
             ]
         ];
+    }
+
+    public static function generate_random_string( $length = 16 ): string {
+        $random_string = '';
+        $keys = array_merge( range( 0, 9 ), range( 'a', 'z' ), range( 'A', 'Z' ) );
+        for ( $i = 0; $i < $length; $i++ ){
+            $random_string .= $keys[mt_rand( 0, count( $keys ) - 1 )];
+        }
+
+        return $random_string;
+    }
+
+    public static function validate_url( $url ): string {
+        if ( !filter_var( $url, FILTER_VALIDATE_URL ) ) {
+            $http = 'http://';
+            $https = 'https://';
+            if ( ( substr( $url, 0, strlen( $http ) ) !== $http ) && ( substr( $url, 0, strlen( $https ) ) !== $https ) ) {
+                $url = $https . trim( $url );
+            }
+        }
+
+        return $url;
     }
 
     public static function fetch_option_connection_objs(): object {

@@ -171,6 +171,21 @@ jQuery(function ($) {
                 $('#connection_type_s3_region').val( type['region'] );
                 $('#connection_type_s3_bucket').val( type['bucket'] );
                 $('#connection_type_s3_endpoint').val( type['endpoint'] );
+
+                // Disable Test Connection button for Backblaze connection types; which is currently not supported with aws s3 v2 api!
+                if (connection_type['key'] === 'backblaze') {
+                  const test_but = $('#connection_type_s3_test_but');
+                  const test_but_content = $('#connection_type_s3_test_but_content');
+                  $(test_but).prop('disabled', true);
+                  $(test_but_content).text('Test Connection Not Supported!');
+                }
+              };
+            } else if (connection_type['key'] === 'backblaze') {
+              connection_type_refresh = function () {
+                const test_but = $('#connection_type_s3_test_but');
+                const test_but_content = $('#connection_type_s3_test_but_content');
+                $(test_but).prop('disabled', true);
+                $(test_but_content).text('Test Connection Not Supported!');
               };
             }
 
@@ -235,11 +250,25 @@ jQuery(function ($) {
     `;
   }
 
+  function validate_url( url ) {
+    try {
+
+      // Convert to url object.
+      const url_obj = new URL(url);
+
+      // Ensure correct protocols have been specified.
+      return ( ( url_obj.protocol === 'http:' ) || ( url_obj.protocol === 'https:' ) ) ?  url : ( 'https://' + url );
+
+    } catch (err) {
+      return 'https://' + url;
+    }
+  }
+
   function handle_connection_test_for_s3() {
 
     // Trigger spinner!
     const test_but_content = $('#connection_type_s3_test_but_content');
-    $(test_but_content).text('').removeClass('mdi mdi-lan-disconnect').removeClass('mdi mdi-lan-connect').addClass('loading-spinner active');
+    $(test_but_content).text('').addClass('loading-spinner active');
 
     try {
 
@@ -248,7 +277,7 @@ jQuery(function ($) {
       const secret_access_key = $('#connection_type_s3_secret_access_key').val();
       const region = $('#connection_type_s3_region').val();
       const bucket = $('#connection_type_s3_bucket').val();
-      const endpoint = $('#connection_type_s3_endpoint').val();
+      const endpoint = validate_url( $('#connection_type_s3_endpoint').val() );
 
       // Create aws s3 object.
       const s3 = new AWS.S3({
@@ -259,16 +288,14 @@ jQuery(function ($) {
         },
         endpoint: endpoint
       });
-      console.log( s3 );
 
       // A successful listing of buckets, shall constitute as a validated connection.
       s3.listBuckets({}, function(err, data) {
         if (err) {
           console.log(err, err.stack);
-          $(test_but_content).removeClass('loading-spinner active').addClass('mdi mdi-lan-disconnect');
+          $(test_but_content).removeClass('loading-spinner active').text('Connection Failed!');
 
         } else {
-          console.log(data);
 
           // Ensure configured bucket is also listed.
           let valid_connection = false;
@@ -282,17 +309,17 @@ jQuery(function ($) {
 
           // Report back accordingly on connection test.
           if ( valid_connection ) {
-            $(test_but_content).removeClass('loading-spinner active').addClass('mdi mdi-lan-connect');
+            $(test_but_content).removeClass('loading-spinner active').text('Connection Successful!');
 
           } else {
-            $(test_but_content).removeClass('loading-spinner active').addClass('mdi mdi-lan-disconnect');
+            $(test_but_content).removeClass('loading-spinner active').text('Connection Failed!');
           }
         }
       });
 
     } catch ( error ) {
       console.log( error );
-      $(test_but_content).removeClass('loading-spinner active').addClass('mdi mdi-lan-disconnect');
+      $(test_but_content).removeClass('loading-spinner active').text('Connection Failed!');
     }
   }
 
