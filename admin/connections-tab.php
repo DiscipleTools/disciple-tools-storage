@@ -67,7 +67,7 @@ class Disciple_Tools_Media_Tab_Connections {
         wp_enqueue_script( 'aws-sdk-s3', 'https://sdk.amazonaws.com/js/aws-sdk-2.1583.0.min.js', [ 'jquery' ], '2.1583.0', true );
 
         dt_theme_enqueue_style( 'material-font-icons-local', 'dt-core/dependencies/mdi/css/materialdesignicons.min.css', array() );
-        wp_enqueue_style( 'material-font-icons', 'https://cdn.jsdelivr.net/npm/@mdi/font@6.6.96/css/materialdesignicons.min.css' );
+        wp_enqueue_style( 'material-font-icons', 'https://cdn.jsdelivr.net/npm/@mdi/font@6.6.96/css/materialdesignicons.min.css', array(), '6.6.96' );
 
         wp_enqueue_script( 'dt_media_script', plugin_dir_url( __FILE__ ) . 'js/connections-tab.js', [
             'jquery',

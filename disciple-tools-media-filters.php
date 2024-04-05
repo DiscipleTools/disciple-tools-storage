@@ -129,7 +129,7 @@ function dt_media_connections_obj_upload( $response, $media_connection_id, $key_
                             $filename = $upload['tmp_name'] ?? '';
                             $file = fopen( $filename, 'r' );
                             $part_number = 1;
-                            while (!feof( $file )){
+                            while ( !feof( $file ) ) {
                                 $result = $s3->uploadPart( [
                                     'Bucket' => $bucket,
                                     'Key' => $key_name,
@@ -149,7 +149,7 @@ function dt_media_connections_obj_upload( $response, $media_connection_id, $key_
                             }
                             fclose( $file );
 
-                        } catch (Exception $e) {
+                        } catch ( Exception $e ) {
                             $response = false;
                             $result = $s3->abortMultipartUpload( [
                                 'Bucket' => $bucket,
@@ -172,7 +172,7 @@ function dt_media_connections_obj_upload( $response, $media_connection_id, $key_
                                 ] );
                                 $response = $result['Key'] ?? false;
 
-                            } catch (Exception $e) {
+                            } catch ( Exception $e ) {
                                 $response = false;
                             }
                         }
