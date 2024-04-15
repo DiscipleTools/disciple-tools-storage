@@ -1,13 +1,13 @@
 <?php
 /**
- * Plugin Name: Disciple.Tools - Media
- * Plugin URI: https://github.com/DiscipleTools/disciple-tools-media
- * Description: Disciple.Tools - Media is intended to help manage connections with remote object storage services, such as AWS S3.
- * Text Domain: disciple-tools-media
+ * Plugin Name: Disciple.Tools - Storage
+ * Plugin URI: https://github.com/DiscipleTools/disciple-tools-storage
+ * Description: Disciple.Tools - Storage is intended to help manage connections with remote object storage services, such as AWS S3.
+ * Text Domain: disciple-tools-storage
  * Domain Path: /languages
  * Version:  0.1
  * Author URI: https://github.com/DiscipleTools
- * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-media
+ * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-storage
  * Requires at least: 4.7.0
  * (Requires 4.7+ because of the integration of the REST API at 4.7 and the security requirements of this milestone version.)
  * Tested up to: 5.6
@@ -20,8 +20,8 @@
 
 /**
  * Refactoring (renaming) this plugin as your own:
- * 1. @todo Rename the `disciple-tools-media.php file.
- * 2. @todo Refactor all occurrences of the name Disciple_Tools_Media, disciple_tools_media, disciple-tools-media, media, and "Media"
+ * 1. @todo Rename the `disciple-tools-storage.php file.
+ * 2. @todo Refactor all occurrences of the name Disciple_Tools_Storage, disciple_tools_storage, disciple-tools-storage, storage, and "Storage"
  * 3. @todo Update the README.md and LICENSE
  * 4. @todo Update the default.pot file if you intend to make your plugin multilingual. Use a tool like POEdit
  */
@@ -31,14 +31,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Gets the instance of the `Disciple_Tools_Media` class.
+ * Gets the instance of the `Disciple_Tools_Storage` class.
  *
  * @since  0.1
  * @access public
  * @return object|bool
  */
-function disciple_tools_media() {
-    $disciple_tools_media_required_dt_theme_version = '1.19';
+function disciple_tools_storage() {
+    $disciple_tools_storage_required_dt_theme_version = '1.19';
     $wp_theme = wp_get_theme();
     $version = $wp_theme->version;
 
@@ -46,8 +46,8 @@ function disciple_tools_media() {
      * Check if the Disciple.Tools theme is loaded and is the latest required version
      */
     $is_theme_dt = class_exists( 'Disciple_Tools' );
-    if ( $is_theme_dt && version_compare( $version, $disciple_tools_media_required_dt_theme_version, '<' ) ) {
-        add_action( 'admin_notices', 'disciple_tools_media_hook_admin_notice' );
+    if ( $is_theme_dt && version_compare( $version, $disciple_tools_storage_required_dt_theme_version, '<' ) ) {
+        add_action( 'admin_notices', 'disciple_tools_storage_hook_admin_notice' );
         add_action( 'wp_ajax_dismissed_notice_handler', 'dt_hook_ajax_notice_handler' );
         return false;
     }
@@ -61,15 +61,15 @@ function disciple_tools_media() {
         require_once get_template_directory() . '/dt-core/global-functions.php';
     }
 
-    return Disciple_Tools_Media::instance();
+    return Disciple_Tools_Storage::instance();
 
 }
-add_action( 'after_setup_theme', 'disciple_tools_media', 20 );
+add_action( 'after_setup_theme', 'disciple_tools_storage', 20 );
 
 //register the D.T Plugin
 add_filter( 'dt_plugins', function ( $plugins ){
     $plugin_data = get_file_data( __FILE__, [ 'Version' => 'Version', 'Plugin Name' => 'Plugin Name' ], false );
-    $plugins['disciple-tools-media'] = [
+    $plugins['disciple-tools-storage'] = [
         'plugin_url' => trailingslashit( plugin_dir_url( __FILE__ ) ),
         'version' => $plugin_data['Version'] ?? null,
         'name' => $plugin_data['Plugin Name'] ?? null,
@@ -83,7 +83,7 @@ add_filter( 'dt_plugins', function ( $plugins ){
  * @since  0.1
  * @access public
  */
-class Disciple_Tools_Media {
+class Disciple_Tools_Storage {
 
     private static $_instance = null;
     public static function instance() {
@@ -96,14 +96,14 @@ class Disciple_Tools_Media {
     private function __construct() {
         $is_rest = dt_is_rest();
 
-        require_once( 'disciple-tools-media-api.php' );
-        require_once( 'disciple-tools-media-filters.php' );
+        require_once( 'disciple-tools-storage-api.php' );
+        require_once( 'disciple-tools-storage-filters.php' );
 
         /**
          * @todo Decide if you want to use the REST API example
          * To remove: delete this following line and remove the folder named /rest-api
          */
-        if ( $is_rest && strpos( dt_get_url_path(), 'disciple-tools-media' ) !== false ) {
+        if ( $is_rest && strpos( dt_get_url_path(), 'disciple_tools_storage' ) !== false ) {
             require_once( 'rest-api/rest-api.php' ); // adds starter rest api class
         }
 
@@ -159,7 +159,7 @@ class Disciple_Tools_Media {
      */
     public static function deactivation() {
         // add functions here that need to happen on deactivation
-        delete_option( 'dismissed-disciple-tools-media' );
+        delete_option( 'dismissed-disciple-tools-storage' );
     }
 
     /**
@@ -170,7 +170,7 @@ class Disciple_Tools_Media {
      * @return void
      */
     public function i18n() {
-        $domain = 'disciple-tools-media';
+        $domain = 'disciple-tools-storage';
         load_plugin_textdomain( $domain, false, trailingslashit( dirname( plugin_basename( __FILE__ ) ) ). 'languages' );
     }
 
@@ -182,7 +182,7 @@ class Disciple_Tools_Media {
      * @return string
      */
     public function __toString() {
-        return 'disciple-tools-media';
+        return 'disciple-tools-storage';
     }
 
     /**
@@ -217,7 +217,7 @@ class Disciple_Tools_Media {
      * @access public
      */
     public function __call( $method = '', $args = array() ) {
-        _doing_it_wrong( 'disciple_tools_media::' . esc_html( $method ), 'Method does not exist.', '0.1' );
+        _doing_it_wrong( 'disciple_tools_storage::' . esc_html( $method ), 'Method does not exist.', '0.1' );
         unset( $method, $args );
         return null;
     }
@@ -225,32 +225,32 @@ class Disciple_Tools_Media {
 
 
 // Register activation hook.
-register_activation_hook( __FILE__, [ 'Disciple_Tools_Media', 'activation' ] );
-register_deactivation_hook( __FILE__, [ 'Disciple_Tools_Media', 'deactivation' ] );
+register_activation_hook( __FILE__, [ 'Disciple_Tools_Storage', 'activation' ] );
+register_deactivation_hook( __FILE__, [ 'Disciple_Tools_Storage', 'deactivation' ] );
 
 
-if ( ! function_exists( 'disciple_tools_media_hook_admin_notice' ) ) {
-    function disciple_tools_media_hook_admin_notice() {
-        global $disciple_tools_media_required_dt_theme_version;
+if ( ! function_exists( 'disciple_tools_storage_hook_admin_notice' ) ) {
+    function disciple_tools_storage_hook_admin_notice() {
+        global $disciple_tools_storage_required_dt_theme_version;
         $wp_theme = wp_get_theme();
         $current_version = $wp_theme->version;
-        $message = "'Disciple.Tools - Media' plugin requires 'Disciple.Tools' theme to work. Please activate 'Disciple.Tools' theme or make sure it is latest version.";
+        $message = "'Disciple.Tools - Storage' plugin requires 'Disciple.Tools' theme to work. Please activate 'Disciple.Tools' theme or make sure it is latest version.";
         if ( $wp_theme->get_template() === 'disciple-tools-theme' ){
-            $message .= ' ' . sprintf( esc_html( 'Current Disciple.Tools version: %1$s, required version: %2$s' ), esc_html( $current_version ), esc_html( $disciple_tools_media_required_dt_theme_version ) );
+            $message .= ' ' . sprintf( esc_html( 'Current Disciple.Tools version: %1$s, required version: %2$s' ), esc_html( $current_version ), esc_html( $disciple_tools_storage_required_dt_theme_version ) );
         }
         // Check if it's been dismissed...
-        if ( ! get_option( 'dismissed-disciple-tools-media', false ) ) { ?>
-            <div class="notice notice-error notice-disciple-tools-media is-dismissible" data-notice="disciple-tools-media">
+        if ( ! get_option( 'dismissed-disciple-tools-storage', false ) ) { ?>
+            <div class="notice notice-error notice-disciple-tools-storage is-dismissible" data-notice="disciple-tools-storage">
                 <p><?php echo esc_html( $message );?></p>
             </div>
             <script>
                 jQuery(function($) {
-                    $( document ).on( 'click', '.notice-disciple-tools-media .notice-dismiss', function () {
+                    $( document ).on( 'click', '.notice-disciple-tools-storage .notice-dismiss', function () {
                         $.ajax( ajaxurl, {
                             type: 'POST',
                             data: {
                                 action: 'dismissed_notice_handler',
-                                type: 'disciple-tools-media',
+                                type: 'disciple-tools-storage',
                                 security: '<?php echo esc_html( wp_create_nonce( 'wp_rest_dismiss' ) ) ?>'
                             }
                         })
@@ -282,7 +282,7 @@ if ( !function_exists( 'dt_hook_ajax_notice_handler' ) ){
  * This section runs the remote plugin updating service, so you can issue distributed updates to your plugin
  *
  * @note See the instructions for version updating to understand the steps involved.
- * @link https://github.com/DiscipleTools/disciple-tools-media/wiki/Configuring-Remote-Updating-System
+ * @link https://github.com/DiscipleTools/disciple-tools-storage/wiki/Configuring-Remote-Updating-System
  *
  * @todo Enable this section with your own hosted file
  * @todo An example of this file can be found in (version-control.json)
@@ -307,9 +307,9 @@ add_action( 'plugins_loaded', function () {
         }
         if ( class_exists( 'Puc_v4_Factory' ) ) {
             Puc_v4_Factory::buildUpdateChecker(
-                'https://raw.githubusercontent.com/DiscipleTools/disciple-tools-media/master/version-control.json',
+                'https://raw.githubusercontent.com/DiscipleTools/disciple-tools-storage/master/version-control.json',
                 __FILE__,
-                'disciple-tools-media'
+                'disciple-tools-storage'
             );
         }
     }

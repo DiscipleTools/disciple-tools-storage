@@ -4,9 +4,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 /**
- * Class Disciple_Tools_Media_Tab_General
+ * Class Disciple_Tools_Storage_Tab_General
  */
-class Disciple_Tools_Media_Tab_General {
+class Disciple_Tools_Storage_Tab_General {
     public function content() {
         ?>
         <div class="wrap">
@@ -35,7 +35,7 @@ class Disciple_Tools_Media_Tab_General {
     }
 
     public function main_column() {
-        $token = Disciple_Tools_Media_Menu::instance()->token;
+        $token = Disciple_Tools_Storage_Menu::instance()->token;
         $this->process_form_fields( $token );
 
         $my_plugin_option = get_option( $token . '_my_plugin_option' );

@@ -2,23 +2,23 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; } // Exit if accessed directly
 
 /**
- * Class Disciple_Tools_Media_Menu
+ * Class Disciple_Tools_Storage_Menu
  */
-class Disciple_Tools_Media_Menu {
+class Disciple_Tools_Storage_Menu {
 
-    public $token = 'disciple_tools_media';
-    public $page_title = 'Media';
+    public $token = 'disciple_tools_storage';
+    public $page_title = 'Storage';
 
     private static $_instance = null;
 
     /**
-     * Disciple_Tools_Media_Menu Instance
+     * Disciple_Tools_Storage_Menu Instance
      *
-     * Ensures only one instance of Disciple_Tools_Media_Menu is loaded or can be loaded.
+     * Ensures only one instance of Disciple_Tools_Storage_Menu is loaded or can be loaded.
      *
      * @since 0.1.0
      * @static
-     * @return Disciple_Tools_Media_Menu instance
+     * @return Disciple_Tools_Storage_Menu instance
      */
     public static function instance() {
         if ( is_null( self::$_instance ) ) {
@@ -37,7 +37,7 @@ class Disciple_Tools_Media_Menu {
 
         add_action( 'admin_menu', array( $this, 'register_menu' ) );
 
-        $this->page_title = __( 'Media', 'disciple-tools-media' );
+        $this->page_title = __( 'Storage', 'disciple-tools-storage' );
     } // End __construct()
 
 
@@ -46,7 +46,7 @@ class Disciple_Tools_Media_Menu {
      * @since 0.1
      */
     public function register_menu() {
-        $this->page_title = __( 'Media', 'disciple-tools-media' );
+        $this->page_title = __( 'Storage', 'disciple-tools-storage' );
 
         add_submenu_page( 'dt_extensions', $this->page_title, $this->page_title, 'manage_dt', $this->token, [ $this, 'content' ] );
     }
@@ -90,19 +90,19 @@ class Disciple_Tools_Media_Menu {
                 ?>
                 <br>
                 <span class="notice notice-error" style="display: inline-block; padding-top: 10px; padding-bottom: 10px; width: 97%;">
-                    <?php echo esc_html( 'Disciple.Tools Media Plugin requires PHP version 8.1 or greater. Your current version is: ' . phpversion() . ' Please upgrade PHP.' );?>
+                    <?php echo esc_html( 'Disciple.Tools Storage Plugin requires PHP version 8.1 or greater. Your current version is: ' . phpversion() . ' Please upgrade PHP.' );?>
                 </span>
                 <?php
             } else {
                 switch ( $tab ) {
                     /*case 'general':
                         require( 'general-tab.php' );
-                        $object = new Disciple_Tools_Media_Tab_General();
+                        $object = new Disciple_Tools_Storage_Tab_General();
                         $object->content();
                         break;*/
                     case 'connections':
                         require( 'connections-tab.php' );
-                        $object = new Disciple_Tools_Media_Tab_Connections();
+                        $object = new Disciple_Tools_Storage_Tab_Connections();
                         $object->content();
                         break;
                     default:
@@ -114,5 +114,5 @@ class Disciple_Tools_Media_Menu {
         <?php
     }
 }
-Disciple_Tools_Media_Menu::instance();
+Disciple_Tools_Storage_Menu::instance();
 
