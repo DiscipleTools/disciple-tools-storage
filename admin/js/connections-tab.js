@@ -171,21 +171,6 @@ jQuery(function ($) {
                 $('#connection_type_s3_region').val( type['region'] );
                 $('#connection_type_s3_bucket').val( type['bucket'] );
                 $('#connection_type_s3_endpoint').val( type['endpoint'] );
-
-                // Disable Test Connection button for Backblaze connection types; which is currently not supported with aws s3 v2 api!
-                if (connection_type['key'] === 'backblaze') {
-                  const test_but = $('#connection_type_s3_test_but');
-                  const test_but_content = $('#connection_type_s3_test_but_content');
-                  $(test_but).prop('disabled', true);
-                  $(test_but_content).text('Test Connection Not Supported!');
-                }
-              };
-            } else if (connection_type['key'] === 'backblaze') {
-              connection_type_refresh = function () {
-                const test_but = $('#connection_type_s3_test_but');
-                const test_but_content = $('#connection_type_s3_test_but_content');
-                $(test_but).prop('disabled', true);
-                $(test_but_content).text('Test Connection Not Supported!');
               };
             }
 
@@ -264,6 +249,23 @@ jQuery(function ($) {
     }
   }
 
+  function validate_connection_details( payload, callback ) {
+    $.ajax({
+      url: window.dt_storage.dt_endpoint_validate_connection,
+      method: 'POST',
+      data: payload,
+      beforeSend: (xhr) => {
+        xhr.setRequestHeader("X-WP-Nonce", window.dt_admin_scripts.nonce);
+      },
+      success: function (data) {
+        callback( data );
+      },
+      error: function (data) {
+        callback( data );
+      }
+    });
+  }
+
   function handle_connection_test_for_s3() {
 
     // Trigger spinner!
@@ -279,43 +281,21 @@ jQuery(function ($) {
       const bucket = $('#connection_type_s3_bucket').val();
       const endpoint = validate_url( $('#connection_type_s3_endpoint').val() );
 
-      // Create aws s3 object.
-      const s3 = new AWS.S3({
-        region: region,
-        credentials: {
-          accessKeyId: access_key,
-          secretAccessKey: secret_access_key,
+      // Request backend connection validation test.
+      validate_connection_details({
+          'connection_type_api': 's3',
+          's3': {
+            'access_key': access_key,
+            'secret_access_key': secret_access_key,
+            'region': region,
+            'bucket': bucket,
+            'endpoint': endpoint
+          }
         },
-        endpoint: endpoint
-      });
-
-      // A successful listing of buckets, shall constitute as a validated connection.
-      s3.listBuckets({}, function(err, data) {
-        if (err) {
-          console.log(err, err.stack);
-          $(test_but_content).removeClass('loading-spinner active').text('Connection Failed!');
-
-        } else {
-
-          // Ensure configured bucket is also listed.
-          let valid_connection = false;
-          if ( data?.Buckets ) {
-            data.Buckets.forEach((bucket_config) => {
-              if ( bucket_config?.Name === bucket ) {
-                valid_connection = true;
-              }
-            });
-          }
-
-          // Report back accordingly on connection test.
-          if ( valid_connection ) {
-            $(test_but_content).removeClass('loading-spinner active').text('Connection Successful!');
-
-          } else {
-            $(test_but_content).removeClass('loading-spinner active').text('Connection Failed!');
-          }
+        function (response) {
+          $(test_but_content).removeClass('loading-spinner active').text( ( response?.valid ? 'Connection Successful!' : 'Connection Failed!' ) );
         }
-      });
+      );
 
     } catch ( error ) {
       console.log( error );

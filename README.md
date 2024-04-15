@@ -56,7 +56,6 @@ A detailed description of the typical usage flow for creating and using connecti
 
 > Some important things to note when working with Backblaze services:
 >
-> - Currently, due to API version restrictions, Backblaze connections are unable to be validated and will typically fail, with Network Error exceptions, when attempting to test connection. However, you should be able to upload and retrieve files freely within the D.T Frontend UI.
 > - Ensure sufficient CORS permissions have been applied to target Backblaze bucket, as shown below:
 
 ![5](documentation/readme/imgs/5.png)

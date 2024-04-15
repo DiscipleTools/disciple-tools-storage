@@ -10,6 +10,10 @@ class Disciple_Tools_Storage_API {
 
     public static $option_dt_storage_connection_objects = 'dt_storage_connection_objects';
 
+    public static function fetch_endpoint_validate_connection(): string {
+        return trailingslashit( site_url() ) . 'wp-json/disciple_tools_storage/v1/validate_connection';
+    }
+
     public static function list_supported_connection_types(): array {
         return [
             'aws' => [

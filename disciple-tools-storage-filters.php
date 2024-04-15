@@ -56,6 +56,15 @@ class DT_Storage {
         }
         return false;
     }
+
+    /**
+     * @param string $connection_type_api like 's3'
+     * @param array $details
+     * @return bool
+     */
+    public static function validate_connection_details( $connection_type_api, $details ): bool {
+        return dt_storage_connection_validation( false, $connection_type_api, $details );
+    }
 }
 
 
@@ -97,6 +106,43 @@ function dt_storage_connections_by_id( $connections, $id ) {
 add_filter( 'dt_storage_connections_enabled', 'dt_storage_connections_enabled', 10, 2 );
 function dt_storage_connections_enabled( $response, $id ): bool {
     return !empty( apply_filters( 'dt_storage_connections_by_id', [], $id ) );
+}
+
+add_filter( 'dt_storage_connection_validation', 'dt_storage_connection_validation', 10, 3 );
+function dt_storage_connection_validation( $response, $connection_type_api, $details ): bool {
+    if ( isset( $details['access_key'], $details['secret_access_key'], $details['region'], $details['bucket'], $details['endpoint'] ) ) {
+        switch ( $connection_type_api ) {
+            case 's3':
+                try {
+
+                    require_once( 'vendor/autoload.php' );
+
+                    // Instantiate required aws s3 client object.
+                    $s3 = new Aws\S3\S3Client( [
+                        'region' => $details['region'],
+                        'version' => 'latest',
+                        'credentials' => [
+                            'key' => $details['access_key'],
+                            'secret' => $details['secret_access_key']
+                        ],
+                        'endpoint' => $details['endpoint']
+                    ] );
+
+                    // A successful listing of buckets, shall constitute as a validated connection.
+                    $buckets = $s3->listBuckets( [] );
+
+                    $response = !is_wp_error( $buckets ) && !empty( $buckets['Buckets'] );
+
+                }catch ( Exception $e ) {
+                    $response = false;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    return $response;
 }
 
 add_filter( 'dt_storage_connections_obj_upload', 'dt_storage_connections_obj_upload', 10, 5 );

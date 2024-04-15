@@ -19,12 +19,12 @@ class Disciple_Tools_Storage_Endpoints
      */
     //See https://github.com/DiscipleTools/disciple-tools-theme/wiki/Site-to-Site-Link for outside of wordpress authentication
     public function add_api_routes() {
-        $namespace = 'disciple-tools-storage/v1';
+        $namespace = 'disciple_tools_storage/v1';
 
         register_rest_route(
-            $namespace, '/endpoint', [
-                'methods'  => 'GET',
-                'callback' => [ $this, 'endpoint' ],
+            $namespace, '/validate_connection', [
+                'methods'  => 'POST',
+                'callback' => [ $this, 'validate_connection' ],
                 'permission_callback' => function( WP_REST_Request $request ) {
                     return $this->has_permission();
                 },
@@ -33,11 +33,15 @@ class Disciple_Tools_Storage_Endpoints
     }
 
 
-    public function endpoint( WP_REST_Request $request ) {
+    public function validate_connection( WP_REST_Request $request ): array {
+        $response = [];
 
-        // @todo run your function here
+        $params = $request->get_params();
+        if ( isset( $params['connection_type_api'], $params[ $params['connection_type_api'] ] ) ) {
+            $response['valid'] = DT_Storage::validate_connection_details( $params['connection_type_api'], $params[ $params['connection_type_api'] ] );
+        }
 
-        return true;
+        return $response;
     }
 
     private static $_instance = null;

@@ -64,18 +64,16 @@ class Disciple_Tools_Storage_Tab_Connections {
     }
 
     public function process_scripts() {
-        wp_enqueue_script( 'aws-sdk-s3', 'https://sdk.amazonaws.com/js/aws-sdk-2.1583.0.min.js', [ 'jquery' ], '2.1583.0', true );
-
         dt_theme_enqueue_style( 'material-font-icons-local', 'dt-core/dependencies/mdi/css/materialdesignicons.min.css', array() );
         wp_enqueue_style( 'material-font-icons', 'https://cdn.jsdelivr.net/npm/@mdi/font@6.6.96/css/materialdesignicons.min.css', array(), '6.6.96' );
 
         wp_enqueue_script( 'dt_storage_script', plugin_dir_url( __FILE__ ) . 'js/connections-tab.js', [
-            'jquery',
-            'aws-sdk-s3'
+            'jquery'
         ], filemtime( dirname( __FILE__ ) . '/js/connections-tab.js' ), true );
 
         wp_localize_script(
             'dt_storage_script', 'dt_storage', array(
+                'dt_endpoint_validate_connection' => Disciple_Tools_Storage_API::fetch_endpoint_validate_connection(),
                 'connection_types' => Disciple_Tools_Storage_API::list_supported_connection_types(),
                 'connection_objs' => Disciple_Tools_Storage_API::fetch_option_connection_objs(),
                 'previous_updated_connection_obj'  => $this->fetch_previous_updated_connection_obj()
