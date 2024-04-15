@@ -10,11 +10,11 @@ class DT_Storage {
      * @return object|null
      */
     private static function get_connection(){
-        $media_connection_id = dt_get_option( 'dt_media_connection_id' );
-        if ( empty( $media_connection_id ) ) {
+        $storage_connection_id = dt_get_option( 'dt_storage_connection_id' );
+        if ( empty( $storage_connection_id ) ) {
             return null;
         }
-        return Disciple_Tools_Media_API::fetch_option_connection_obj( $media_connection_id );
+        return Disciple_Tools_Storage_API::fetch_option_connection_obj( $storage_connection_id );
     }
 
     /**
@@ -32,7 +32,7 @@ class DT_Storage {
     public static function get_file_url( string $key ): string {
         $connection = self::get_connection();
         if ( !empty( $connection ) ) {
-            return dt_media_connections_obj_url( null, $connection->id, $key, [ 'keep_alive' => '+24 hours' ] );
+            return dt_storage_connections_obj_url( null, $connection->id, $key, [ 'keep_alive' => '+24 hours' ] );
         }
         return '';
     }
@@ -52,7 +52,7 @@ class DT_Storage {
             'default_key' => $existing_key
         ];
         if ( !empty( $connection ) ) {
-            return dt_media_connections_obj_upload( null, $connection->id, $key_prefix, $upload, $args );
+            return dt_storage_connections_obj_upload( null, $connection->id, $key_prefix, $upload, $args );
         }
         return false;
     }
@@ -61,9 +61,9 @@ class DT_Storage {
 
 
 
-add_filter( 'dt_media_connection_types', 'dt_media_connection_types', 10, 1 );
-function dt_media_connection_types( $connection_types ) {
-    foreach ( Disciple_Tools_Media_API::list_supported_connection_types() as $key => $type ) {
+add_filter( 'dt_storage_connection_types', 'dt_storage_connection_types', 10, 1 );
+function dt_storage_connection_types( $connection_types ) {
+    foreach ( Disciple_Tools_Storage_API::list_supported_connection_types() as $key => $type ) {
         if ( $type['enabled'] ) {
             $connection_types[ $key ] = $type;
         }
@@ -72,9 +72,9 @@ function dt_media_connection_types( $connection_types ) {
     return $connection_types;
 }
 
-add_filter( 'dt_media_connections', 'dt_media_connections', 10, 1 );
-function dt_media_connections( $connections ) {
-    foreach ( Disciple_Tools_Media_API::fetch_option_connection_objs() as $id => $connection ) {
+add_filter( 'dt_storage_connections', 'dt_storage_connections', 10, 1 );
+function dt_storage_connections( $connections ) {
+    foreach ( Disciple_Tools_Storage_API::fetch_option_connection_objs() as $id => $connection ) {
         if ( $connection->enabled ) {
             $connections[] = (array) $connection;
         }
@@ -83,9 +83,9 @@ function dt_media_connections( $connections ) {
     return $connections;
 }
 
-add_filter( 'dt_media_connections_by_id', 'dt_media_connections_by_id', 10, 2 );
-function dt_media_connections_by_id( $connections, $id ) {
-    $connection = Disciple_Tools_Media_API::fetch_option_connection_obj( $id );
+add_filter( 'dt_storage_connections_by_id', 'dt_storage_connections_by_id', 10, 2 );
+function dt_storage_connections_by_id( $connections, $id ) {
+    $connection = Disciple_Tools_Storage_API::fetch_option_connection_obj( $id );
 
     if ( !empty( $connection ) && isset( $connection->enabled ) && $connection->enabled ) {
         $connections[] = (array) $connection;
@@ -94,19 +94,19 @@ function dt_media_connections_by_id( $connections, $id ) {
     return $connections;
 }
 
-add_filter( 'dt_media_connections_enabled', 'dt_media_connections_enabled', 10, 2 );
-function dt_media_connections_enabled( $response, $id ): bool {
-    return !empty( apply_filters( 'dt_media_connections_by_id', [], $id ) );
+add_filter( 'dt_storage_connections_enabled', 'dt_storage_connections_enabled', 10, 2 );
+function dt_storage_connections_enabled( $response, $id ): bool {
+    return !empty( apply_filters( 'dt_storage_connections_by_id', [], $id ) );
 }
 
-add_filter( 'dt_media_connections_obj_upload', 'dt_media_connections_obj_upload', 10, 5 );
-function dt_media_connections_obj_upload( $response, $media_connection_id, $key_prefix = '', $upload = [], $args = [] ) {
+add_filter( 'dt_storage_connections_obj_upload', 'dt_storage_connections_obj_upload', 10, 5 );
+function dt_storage_connections_obj_upload( $response, $storage_connection_id, $key_prefix = '', $upload = [], $args = [] ) {
 
     // If required, auto-generate key to be used for object upload storage, along with any prefixes & suffixes.
     if ( isset( $args['auto_generate_key'] ) && !$args['auto_generate_key'] && !empty( $args['default_key'] ) ) {
         $key = $args['default_key'];
     } else {
-        $key = $key_prefix . Disciple_Tools_Media_API::generate_random_string( 112 );
+        $key = $key_prefix . Disciple_Tools_Storage_API::generate_random_string( 112 );
     }
 
     // If required, capture uploading file's extension.
@@ -117,21 +117,21 @@ function dt_media_connections_obj_upload( $response, $media_connection_id, $key_
         }
     }
 
-    // Ensure required media connection settings, are available.
-    $media_connection_types = apply_filters( 'dt_media_connection_types', [] );
-    $media_connection_filter = apply_filters( 'dt_media_connections_by_id', [], $media_connection_id );
-    $media_connection = null;
-    if ( !empty( $media_connection_filter ) ) {
-        $media_connection = $media_connection_filter[0];
+    // Ensure required storage connection settings, are available.
+    $storage_connection_types = apply_filters( 'dt_storage_connection_types', [] );
+    $storage_connection_filter = apply_filters( 'dt_storage_connections_by_id', [], $storage_connection_id );
+    $storage_connection = null;
+    if ( !empty( $storage_connection_filter ) ) {
+        $storage_connection = $storage_connection_filter[0];
     }
 
-    if ( !empty( $media_connection ) && isset( $media_connection_types[$media_connection['type']] ) ){
-        $media_connection_type = $media_connection_types[$media_connection['type']];
+    if ( !empty( $storage_connection ) && isset( $storage_connection_types[$storage_connection['type']] ) ){
+        $storage_connection_type = $storage_connection_types[$storage_connection['type']];
 
         // Handle file upload accordingly, based on associated connection api.
-        switch ( $media_connection_type['api'] ) {
+        switch ( $storage_connection_type['api'] ) {
             case 's3':
-                $config = (array) $media_connection[$media_connection['type']];
+                $config = (array) $storage_connection[$storage_connection['type']];
                 if ( isset( $config['access_key'], $config['secret_access_key'], $config['region'], $config['bucket'], $config['endpoint'] ) ) {
 
                     require_once( 'vendor/autoload.php' );
@@ -142,10 +142,10 @@ function dt_media_connections_obj_upload( $response, $media_connection_id, $key_
                     $bucket = $config['bucket'];
 
                     // Generate complete file key name to be used moving forward.
-                    $key_name = ( isset( $media_connection_type['prefix_bucket_name_to_obj_key'] ) && $media_connection_type['prefix_bucket_name_to_obj_key'] ) ? ( $bucket .'/'. $key ) : $key;
+                    $key_name = ( isset( $storage_connection_type['prefix_bucket_name_to_obj_key'] ) && $storage_connection_type['prefix_bucket_name_to_obj_key'] ) ? ( $bucket .'/'. $key ) : $key;
 
                     // Ensure endpoint reference has the correct protocol schema.
-                    $endpoint = Disciple_Tools_Media_API::validate_url( $config['endpoint'] );
+                    $endpoint = Disciple_Tools_Storage_API::validate_url( $config['endpoint'] );
 
                     try {
 
@@ -244,24 +244,24 @@ function dt_media_connections_obj_upload( $response, $media_connection_id, $key_
     return $response;
 }
 
-add_filter( 'dt_media_connections_obj_url', 'dt_media_connections_obj_url', 10, 4 );
-function dt_media_connections_obj_url( $url, $media_connection_id, $key, $args = [] ): string {
+add_filter( 'dt_storage_connections_obj_url', 'dt_storage_connections_obj_url', 10, 4 );
+function dt_storage_connections_obj_url( $url, $storage_connection_id, $key, $args = [] ): string {
 
-    // Ensure required media connection settings, are available.
-    $media_connection_types = apply_filters( 'dt_media_connection_types', [] );
-    $media_connection_filter = apply_filters( 'dt_media_connections_by_id', [], $media_connection_id );
-    $media_connection = null;
-    if ( !empty( $media_connection_filter ) ) {
-        $media_connection = $media_connection_filter[0];
+    // Ensure required storage connection settings, are available.
+    $storage_connection_types = apply_filters( 'dt_storage_connection_types', [] );
+    $storage_connection_filter = apply_filters( 'dt_storage_connections_by_id', [], $storage_connection_id );
+    $storage_connection = null;
+    if ( !empty( $storage_connection_filter ) ) {
+        $storage_connection = $storage_connection_filter[0];
     }
 
-    if ( !empty( $media_connection ) && isset( $media_connection_types[$media_connection['type']] ) ){
-        $media_connection_type = $media_connection_types[$media_connection['type']];
+    if ( !empty( $storage_connection ) && isset( $storage_connection_types[$storage_connection['type']] ) ){
+        $storage_connection_type = $storage_connection_types[$storage_connection['type']];
 
         // Retrieve file (by specified key) accordingly, based on associated connection api.
-        switch ( $media_connection_type['api'] ) {
+        switch ( $storage_connection_type['api'] ) {
             case 's3':
-                $config = (array) $media_connection[$media_connection['type']];
+                $config = (array) $storage_connection[$storage_connection['type']];
                 if ( isset( $config['access_key'], $config['secret_access_key'], $config['region'], $config['bucket'], $config['endpoint'] ) ) {
 
                     try {
@@ -269,7 +269,7 @@ function dt_media_connections_obj_url( $url, $media_connection_id, $key, $args =
                         require_once( 'vendor/autoload.php' );
 
                         // Ensure endpoint reference has the correct protocol schema.
-                        $endpoint = Disciple_Tools_Media_API::validate_url( $config['endpoint'] );
+                        $endpoint = Disciple_Tools_Storage_API::validate_url( $config['endpoint'] );
 
                         // Instantiate required aws s3 client object.
                         $s3 = new Aws\S3\S3Client( [
@@ -284,7 +284,7 @@ function dt_media_connections_obj_url( $url, $media_connection_id, $key, $args =
                         $bucket = $config['bucket'];
 
                         // Generate complete file key name to be used moving forward.
-                        $key_name = ( isset( $media_connection_type['prefix_bucket_name_to_obj_key'] ) && $media_connection_type['prefix_bucket_name_to_obj_key'] ) ? ( $bucket .'/'. $key ) : $key;
+                        $key_name = ( isset( $storage_connection_type['prefix_bucket_name_to_obj_key'] ) && $storage_connection_type['prefix_bucket_name_to_obj_key'] ) ? ( $bucket .'/'. $key ) : $key;
 
                         // Obtain GetObject command handle.
                         $cmd = $s3->getCommand( 'GetObject', [
@@ -312,13 +312,13 @@ function dt_media_connections_obj_url( $url, $media_connection_id, $key, $args =
     return $url;
 }
 
-add_action( 'dt_media_connections_obj_content', 'dt_media_connections_obj_content', 10, 3 );
-function dt_media_connections_obj_content( $key, $media_connection_id, $args = [
+add_action( 'dt_storage_connections_obj_content', 'dt_storage_connections_obj_content', 10, 3 );
+function dt_storage_connections_obj_content( $key, $storage_connection_id, $args = [
     'html_tag' => 'img',
     'size' => 150
 ] ): void {
-    if ( apply_filters( 'dt_media_connections_enabled', false, $media_connection_id ) ) {
-        $obj_url = apply_filters( 'dt_media_connections_obj_url', null, $media_connection_id, $key, [ 'keep_alive' => '+10 minutes' ] );
+    if ( apply_filters( 'dt_storage_connections_enabled', false, $storage_connection_id ) ) {
+        $obj_url = apply_filters( 'dt_storage_connections_obj_url', null, $storage_connection_id, $key, [ 'keep_alive' => '+10 minutes' ] );
         if ( !empty( $obj_url ) ) {
             $size = $args['size'];
 

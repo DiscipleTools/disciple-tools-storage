@@ -1,12 +1,12 @@
-![Build Status](https://github.com/DiscipleTools/disciple-tools-media/actions/workflows/ci.yml/badge.svg?branch=master)
+![Build Status](https://github.com/DiscipleTools/disciple-tools-storage/actions/workflows/ci.yml/badge.svg?branch=master)
 
-# Disciple.Tools - Media
+# Disciple.Tools - Storage
 
-Disciple.Tools - Media is intended to help manage connections with remote object storage services, such as AWS S3, Backblaze, etc.
+Disciple.Tools - Storage is intended to help manage connections with remote object storage services, such as AWS S3, Backblaze, etc.
 
 ## Purpose
 
-Provide the ability to store/retrieve all media content within 3rd party object storage services; offering greater security.
+Provide the ability to store/retrieve all storage content within 3rd party object storage services; offering greater security.
 
 A detailed description of the typical usage flow for creating and using connections is provided below.
 
@@ -16,7 +16,7 @@ A detailed description of the typical usage flow for creating and using connecti
 
 - Create multiple object storage services connections.
 - Test supplied connection credentials.
-- Select default media connection to be used for file storage within D.T theme.
+- Select default connection to be used for file storage within D.T theme.
 - Edit user profile pictures.
 
 #### Will Not Do
@@ -26,11 +26,11 @@ A detailed description of the typical usage flow for creating and using connecti
 
 #### Typical Usage Flow
 
-- In order to use the new D.T Media Plugin, ensure PHP version 8.1 or greater has been installed.
+- In order to use the new D.T Storage Plugin, ensure PHP version 8.1 or greater has been installed.
 
 ![0](documentation/readme/imgs/0.png)
 
-- Once D.T Media Plugin has been installed, create a new connection.
+- Once D.T Storage Plugin has been installed, create a new connection.
 
 ![1](documentation/readme/imgs/1.png)
 
@@ -61,11 +61,11 @@ A detailed description of the typical usage flow for creating and using connecti
 
 ![5](documentation/readme/imgs/5.png)
 
-- Once new connection has been validated and saved, navigate to Media Settings section within D.T General Settings and select connection to be used for the default media storage within D.T.
+- Once new connection has been validated and saved, navigate to Storage Settings section within D.T General Settings and select connection to be used for the default media storage within D.T.
 
 ![6](documentation/readme/imgs/6.png)
 
-- Currently, media connections are only available when editing user profile pictures.
+- Currently, storage connections are only available when editing user profile pictures.
 
 ![7](documentation/readme/imgs/7.png)
 
@@ -82,8 +82,8 @@ A detailed description of the typical usage flow for creating and using connecti
 ## Contribution
 
 Contributions welcome. You can report issues and bugs in the
-[Issues](https://github.com/DiscipleTools/disciple-tools-media/issues) section of the repo. You can present ideas
-in the [Discussions](https://github.com/DiscipleTools/disciple-tools-media/discussions) section of the repo. And
-code contributions are welcome using the [Pull Request](https://github.com/DiscipleTools/disciple-tools-media/pulls)
+[Issues](https://github.com/DiscipleTools/disciple-tools-storage/issues) section of the repo. You can present ideas
+in the [Discussions](https://github.com/DiscipleTools/disciple-tools-storage/discussions) section of the repo. And
+code contributions are welcome using the [Pull Request](https://github.com/DiscipleTools/disciple-tools-storage/pulls)
 system for git. For a more details on contribution see the
-[contribution guidelines](https://github.com/DiscipleTools/disciple-tools-media/blob/master/CONTRIBUTING.md).
+[contribution guidelines](https://github.com/DiscipleTools/disciple-tools-storage/blob/master/CONTRIBUTING.md).

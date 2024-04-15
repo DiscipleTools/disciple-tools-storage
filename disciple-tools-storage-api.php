@@ -4,11 +4,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 /**
- * Class Disciple_Tools_Media_API
+ * Class Disciple_Tools_Storage_API
  */
-class Disciple_Tools_Media_API {
+class Disciple_Tools_Storage_API {
 
-    public static $option_dt_media_connection_objects = 'dt_media_connection_objects';
+    public static $option_dt_storage_connection_objects = 'dt_storage_connection_objects';
 
     public static function list_supported_connection_types(): array {
         return [
@@ -59,7 +59,7 @@ class Disciple_Tools_Media_API {
     }
 
     public static function fetch_option_connection_objs(): object {
-        $option = get_option( self::$option_dt_media_connection_objects );
+        $option = get_option( self::$option_dt_storage_connection_objects );
 
         if ( ! empty( $option ) ) {
 
@@ -82,7 +82,7 @@ class Disciple_Tools_Media_API {
         $option_connection_objs->{$connection_obj->id} = $connection_obj;
 
         // Save changes.
-        update_option( self::$option_dt_media_connection_objects, json_encode( $option_connection_objs ) );
+        update_option( self::$option_dt_storage_connection_objects, json_encode( $option_connection_objs ) );
     }
 
     public static function fetch_option_connection_obj( $connection_obj_id ) {
@@ -101,7 +101,7 @@ class Disciple_Tools_Media_API {
             unset( $option_connection_objs->{$connection_obj_id} );
 
             // Save changes
-            update_option( self::$option_dt_media_connection_objects, json_encode( $option_connection_objs ) );
+            update_option( self::$option_dt_storage_connection_objects, json_encode( $option_connection_objs ) );
         }
     }
 }

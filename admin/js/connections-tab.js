@@ -3,7 +3,7 @@ jQuery(function ($) {
   // Initial States
   $(document).ready(function () {
     setup_widgets(function () {
-      let connection_obj = window.dt_media.previous_updated_connection_obj;
+      let connection_obj = window.dt_storage.previous_updated_connection_obj;
       if (connection_obj) {
         $('#m_main_col_available_connections_select').val(connection_obj['id']).trigger('change');
       }
@@ -48,7 +48,7 @@ jQuery(function ($) {
 
   // Event Listeners - Helper Functions
   function setup_widgets(callback) {
-    refresh_section_available_connections( window.dt_media.connection_objs );
+    refresh_section_available_connections( window.dt_storage.connection_objs );
 
     callback();
   }
@@ -75,7 +75,7 @@ jQuery(function ($) {
   function fetch_connection_obj(id) {
     let connection_obj = null;
 
-    $.each(window.dt_media.connection_objs, function (idx, obj) {
+    $.each(window.dt_storage.connection_objs, function (idx, obj) {
       if (String(idx).trim() === String(id).trim()) {
         connection_obj = obj;
       }
@@ -144,7 +144,7 @@ jQuery(function ($) {
   }
 
   function handle_connection_type_select( selected_type, connection_obj = null ) {
-    const connection_types = window.dt_media.connection_types;
+    const connection_types = window.dt_storage.connection_types;
     const connection_type_details = $('#m_main_col_connection_type_details');
     const connection_type_details_content = $('#m_main_col_connection_type_details_content');
 
@@ -327,7 +327,7 @@ jQuery(function ($) {
     let connection_obj = {};
 
     // Fetch default settings.....
-    const connection_types = window.dt_media.connection_types;
+    const connection_types = window.dt_storage.connection_types;
 
     const id = $('#m_main_col_connection_manage_id').val();
     const enabled = $('#m_main_col_connection_manage_enabled').prop('checked');

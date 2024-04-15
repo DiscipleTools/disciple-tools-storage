@@ -4,9 +4,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 /**
- * Class Disciple_Tools_Media_Tab_Connections
+ * Class Disciple_Tools_Storage_Tab_Connections
  */
-class Disciple_Tools_Media_Tab_Connections {
+class Disciple_Tools_Storage_Tab_Connections {
 
     public function __construct() {
 
@@ -32,7 +32,7 @@ class Disciple_Tools_Media_Tab_Connections {
 
                 // Ensure we have something to work with.
                 if ( !empty( $updating_connection_obj ) && isset( $updating_connection_obj->id ) ) {
-                    Disciple_Tools_Media_API::update_option_connection_obj( $updating_connection_obj );
+                    Disciple_Tools_Storage_API::update_option_connection_obj( $updating_connection_obj );
                 }
             }
         }
@@ -45,7 +45,7 @@ class Disciple_Tools_Media_Tab_Connections {
 
                 // Ensure we have something to work with.
                 if ( ! empty( $connection_obj_id ) ) {
-                    Disciple_Tools_Media_API::delete_option_connection_obj( $connection_obj_id );
+                    Disciple_Tools_Storage_API::delete_option_connection_obj( $connection_obj_id );
                 }
             }
         }
@@ -69,15 +69,15 @@ class Disciple_Tools_Media_Tab_Connections {
         dt_theme_enqueue_style( 'material-font-icons-local', 'dt-core/dependencies/mdi/css/materialdesignicons.min.css', array() );
         wp_enqueue_style( 'material-font-icons', 'https://cdn.jsdelivr.net/npm/@mdi/font@6.6.96/css/materialdesignicons.min.css', array(), '6.6.96' );
 
-        wp_enqueue_script( 'dt_media_script', plugin_dir_url( __FILE__ ) . 'js/connections-tab.js', [
+        wp_enqueue_script( 'dt_storage_script', plugin_dir_url( __FILE__ ) . 'js/connections-tab.js', [
             'jquery',
             'aws-sdk-s3'
         ], filemtime( dirname( __FILE__ ) . '/js/connections-tab.js' ), true );
 
         wp_localize_script(
-            'dt_media_script', 'dt_media', array(
-                'connection_types' => Disciple_Tools_Media_API::list_supported_connection_types(),
-                'connection_objs' => Disciple_Tools_Media_API::fetch_option_connection_objs(),
+            'dt_storage_script', 'dt_storage', array(
+                'connection_types' => Disciple_Tools_Storage_API::list_supported_connection_types(),
+                'connection_objs' => Disciple_Tools_Storage_API::fetch_option_connection_objs(),
                 'previous_updated_connection_obj'  => $this->fetch_previous_updated_connection_obj()
             )
         );
@@ -255,7 +255,7 @@ class Disciple_Tools_Media_Tab_Connections {
                     <select style="min-width: 100%;" id="m_main_col_connection_manage_type">
                         <option disabled selected value="">-- select connection type --</option>
                         <?php
-                        foreach ( Disciple_Tools_Media_API::list_supported_connection_types() ?? [] as $key => $type ) {
+                        foreach ( Disciple_Tools_Storage_API::list_supported_connection_types() ?? [] as $key => $type ) {
                             if ( $type['enabled'] ) {
                                 ?>
                                 <option
