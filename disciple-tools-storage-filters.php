@@ -55,7 +55,7 @@ class DT_Storage {
                 'image/jpeg',
                 'image/png'
             ] ),
-            'thumbnails_desired_width' => 32 // Heights are automatically calculated, based on specified width.
+            'thumbnails_desired_width' => 100 // Heights are automatically calculated, based on specified width.
         ] );
         if ( !empty( $connection ) ) {
             return dt_storage_connections_obj_upload( null, $connection->id, $key_prefix, $upload, $merged_args );
