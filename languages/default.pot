@@ -1,0 +1,35 @@
+# Copyright (C) 2024 
+# This file is distributed under the same license as the Disciple.Tools - Storage plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Disciple.Tools - Storage 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/disciple-tools-storage\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-04-19T16:21:20+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.10.0\n"
+"X-Domain: disciple-tools-storage\n"
+
+#. Plugin Name of the plugin
+#: disciple-tools-storage.php
+msgid "Disciple.Tools - Storage"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: disciple-tools-storage.php
+msgid "https://github.com/DiscipleTools/disciple-tools-storage"
+msgstr ""
+
+#. Description of the plugin
+#: disciple-tools-storage.php
+msgid "Disciple.Tools - Storage is intended to help manage connections with remote object storage services, such as AWS S3."
+msgstr ""
+
+#. Author URI of the plugin
+#: disciple-tools-storage.php
+msgid "https://github.com/DiscipleTools"
+msgstr ""
