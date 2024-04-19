@@ -38,6 +38,18 @@ class DT_Storage {
     }
 
     /**
+     * @param string $key
+     * @return string
+     */
+    public static function get_thumbnail_url( string $key ): string {
+        $connection = self::get_connection();
+        if ( !empty( $connection ) ) {
+            return dt_storage_connections_obj_url( null, $connection->id, dt_generate_thumbnail_key_name( $key ), [ 'keep_alive' => '+24 hours' ] );
+        }
+        return '';
+    }
+
+    /**
      * @param string $key_prefix like 'users', 'contacts', 'comments
      * @param array $upload
      * @param string $existing_key
@@ -217,7 +229,7 @@ function dt_storage_connections_obj_upload( $response, $storage_connection_id, $
                         // Next, if specified, generate and upload a corresponding thumbnail.
                         $uploaded_thumbnail_key = null;
                         if ( isset( $args['auto_generate_thumbnails'] ) && $args['auto_generate_thumbnails'] ) {
-                            $thumbnail = Disciple_Tools_Storage_API::generate_image_thumbnail( $upload['tmp_name'], $upload['type'] ?? '', $args['thumbnails_desired_width'] ?? 32 );
+                            $thumbnail = Disciple_Tools_Storage_API::generate_image_thumbnail( $upload['tmp_name'], $upload['type'] ?? '', $args['thumbnails_desired_width'] ?? 100 );
                             if ( !empty( $thumbnail ) ) {
 
                                 // Generate temp file to function as a reference point for generated thumbnail.
@@ -252,12 +264,8 @@ function dt_storage_connections_obj_upload( $response, $storage_connection_id, $
                                     // Adjust reference to temp file, for recently generated thumbnail.
                                     $upload['tmp_name'] = $thumbnail_tmp_name;
 
-                                    // Fetch thumbnail sizing info, to be used to generate suffix for key_name.
-                                    $thumbnail_size = getimagesize( $thumbnail_tmp_name );
-                                    if ( !empty( $thumbnail_size ) ) {
-                                        $thumbnail_key_name = $key_name . '.' . $thumbnail_size[0] . 'x' . $thumbnail_size[1];
-                                        $uploaded_thumbnail_key = dt_storage_connections_obj_upload_s3( $s3, $bucket, $thumbnail_key_name, $upload );
-                                    }
+                                    // Upload thumbnail......
+                                    $uploaded_thumbnail_key = dt_storage_connections_obj_upload_s3( $s3, $bucket, dt_generate_thumbnail_key_name( $key_name ), $upload );
                                 }
                             }
                         }
@@ -278,6 +286,24 @@ function dt_storage_connections_obj_upload( $response, $storage_connection_id, $
     }
 
     return $response;
+}
+
+function dt_generate_thumbnail_key_name( $key_name ): string {
+    $thumbnail_key_name = $key_name . '_thumbnail';
+
+    // Determine if position of _thumbnail string needs to be adjusted.
+    $extension_period_pos = strrpos( $key_name, '.' );
+    if ( $extension_period_pos !== false ) {
+
+        // Split into constituting parts.
+        $part_1 = substr( $key_name, 0, $extension_period_pos );
+        $part_2 = substr( $key_name, $extension_period_pos + 1 );
+
+        // Construct new thumbnail name.
+        $thumbnail_key_name = ( $part_1 . '_thumbnail.' ) . $part_2;
+    }
+
+    return $thumbnail_key_name;
 }
 
 function dt_storage_connections_obj_upload_s3( $s3, $bucket, $key_name, $upload ) {
