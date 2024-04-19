@@ -38,21 +38,39 @@ class DT_Storage {
     }
 
     /**
+     * @param string $key
+     * @return string
+     */
+    public static function get_thumbnail_url( string $key ): string {
+        $connection = self::get_connection();
+        if ( !empty( $connection ) ) {
+            return dt_storage_connections_obj_url( null, $connection->id, dt_generate_thumbnail_key_name( $key ), [ 'keep_alive' => '+24 hours' ] );
+        }
+        return '';
+    }
+
+    /**
      * @param string $key_prefix like 'users', 'contacts', 'comments
      * @param array $upload
      * @param string $existing_key
      * @return false|mixed
      */
-    public static function upload_file( string $key_prefix = '', array $upload = [], string $existing_key = '' ){
+    public static function upload_file( string $key_prefix = '', array $upload = [], string $existing_key = '', array $args = [] ){
         $key_prefix = trailingslashit( $key_prefix );
         $connection = self::get_connection();
-        $args = [
+        $merged_args = array_merge( $args, [
             'auto_generate_key' => empty( $existing_key ),
             'include_extension' => empty( $existing_key ),
-            'default_key' => $existing_key
-        ];
+            'default_key' => $existing_key,
+            'auto_generate_thumbnails' => in_array( strtolower( trim( $upload['type'] ?? '' ) ), [
+                'image/gif',
+                'image/jpeg',
+                'image/png'
+            ] ),
+            'thumbnails_desired_width' => 100 // Heights are automatically calculated, based on specified width.
+        ] );
         if ( !empty( $connection ) ) {
-            return dt_storage_connections_obj_upload( null, $connection->id, $key_prefix, $upload, $args );
+            return dt_storage_connections_obj_upload( null, $connection->id, $key_prefix, $upload, $merged_args );
         }
         return false;
     }
@@ -184,7 +202,6 @@ function dt_storage_connections_obj_upload( $response, $storage_connection_id, $
 
                     $s3 = null;
                     $response = true;
-                    $upload_id = null;
                     $bucket = $config['bucket'];
 
                     // Generate complete file key name to be used moving forward.
@@ -206,84 +223,166 @@ function dt_storage_connections_obj_upload( $response, $storage_connection_id, $
                             'endpoint' => $endpoint
                         ] );
 
+                        // First, upload original file.
+                        $uploaded_key = dt_storage_connections_obj_upload_s3( $s3, $bucket, $key_name, $upload );
 
-                        // Upload file in parts, to better manage memory leaks.
-                        $result = $s3->createMultipartUpload( [
-                            'Bucket' => $bucket,
-                            'Key' => $key_name,
-                            // 'StorageClass' => 'REDUCED_REDUNDANCY', // NB: Currently not supported by Backblaze
-                            // 'ACL' => 'public-read', // NB: Currently not supported by Backblaze
-                            'ContentType' => $upload['type'] ?? '',
-                            'Metadata' => []
-                        ] );
-                        $upload_id = $result['UploadId'];
+                        // Next, if specified, generate and upload a corresponding thumbnail.
+                        $uploaded_thumbnail_key = null;
+                        if ( isset( $args['auto_generate_thumbnails'] ) && $args['auto_generate_thumbnails'] ) {
+                            $thumbnail = Disciple_Tools_Storage_API::generate_image_thumbnail( $upload['tmp_name'], $upload['type'] ?? '', $args['thumbnails_desired_width'] ?? 100 );
+                            if ( !empty( $thumbnail ) ) {
 
+                                // Generate temp file to function as a reference point for generated thumbnail.
+                                $tmp_image = tmpfile();
+                                $tmp_image_metadata = stream_get_meta_data( $tmp_image );
+
+                                // Next, populate temp file, accordingly, by image content type.
+                                $thumbnail_tmp_name = null;
+                                switch ( strtolower( trim( $upload['type'] ?? '' ) ) ) {
+                                    case 'image/gif':
+                                        if ( imagegif( $thumbnail, $tmp_image ) ) {
+                                            $thumbnail_tmp_name = $tmp_image_metadata['uri'];
+                                        }
+                                        break;
+                                    case 'image/jpeg':
+                                        if ( imagejpeg( $thumbnail, $tmp_image ) ) {
+                                            $thumbnail_tmp_name = $tmp_image_metadata['uri'];
+                                        }
+                                        break;
+                                    case 'image/png':
+                                        if ( imagepng( $thumbnail, $tmp_image ) ) {
+                                            $thumbnail_tmp_name = $tmp_image_metadata['uri'];
+                                        }
+                                        break;
+                                    default:
+                                        break;
+                                }
+
+                                // If we have a valid thumbnail temp file, proceed with upload attempt.
+                                if ( !empty( $thumbnail_tmp_name ) ) {
+
+                                    // Adjust reference to temp file, for recently generated thumbnail.
+                                    $upload['tmp_name'] = $thumbnail_tmp_name;
+
+                                    // Upload thumbnail......
+                                    $uploaded_thumbnail_key = dt_storage_connections_obj_upload_s3( $s3, $bucket, dt_generate_thumbnail_key_name( $key_name ), $upload );
+                                }
+                            }
+                        }
+
+                        // Finally, capture valid uploaded keys.
+                        $response = [
+                            'uploaded_key' => ! empty( $uploaded_key ) ? $uploaded_key : null,
+                            'uploaded_thumbnail_key' => ! empty( $uploaded_thumbnail_key ) ? $uploaded_thumbnail_key : null
+                        ];
                     } catch ( Exception $e ) {
                         $response = false;
-                    }
-
-                    // Ensure no previous upload exceptions have been encountered.
-                    if ( $response !== false ) {
-                        $parts = [];
-
-                        try {
-
-                            // Start to upload file in partial chunks.
-                            $filename = $upload['tmp_name'] ?? '';
-                            $file = fopen( $filename, 'r' );
-                            $part_number = 1;
-                            while ( !feof( $file ) ) {
-                                $result = $s3->uploadPart( [
-                                    'Bucket' => $bucket,
-                                    'Key' => $key_name,
-                                    'UploadId' => $upload_id,
-                                    'PartNumber' => $part_number,
-                                    'Body' => fread( $file, 5 * 1024 * 1024 ),
-                                ] );
-
-                                $parts['Parts'][$part_number] = [
-                                    'PartNumber' => $part_number,
-                                    'ETag' => $result['ETag'],
-                                ];
-
-                                // Increment part count and force garbage collection, to better manage memory.
-                                $part_number++;
-                                gc_collect_cycles();
-                            }
-                            fclose( $file );
-
-                        } catch ( Exception $e ) {
-                            $response = false;
-                            $result = $s3->abortMultipartUpload( [
-                                'Bucket' => $bucket,
-                                'Key' => $key_name,
-                                'UploadId' => $upload_id
-                            ] );
-                        }
-
-                        // Ensure no previous upload exceptions have been encountered.
-                        if ( $response !== false ) {
-
-                            try {
-
-                                // Complete the multipart upload.
-                                $result = $s3->completeMultipartUpload( [
-                                    'Bucket' => $bucket,
-                                    'Key' => $key_name,
-                                    'UploadId' => $upload_id,
-                                    'MultipartUpload' => $parts,
-                                ] );
-                                $response = $result['Key'] ?? false;
-
-                            } catch ( Exception $e ) {
-                                $response = false;
-                            }
-                        }
                     }
                 }
                 break;
             default:
                 break;
+        }
+    }
+
+    return $response;
+}
+
+function dt_generate_thumbnail_key_name( $key_name ): string {
+    $thumbnail_key_name = $key_name . '_thumbnail';
+
+    // Determine if position of _thumbnail string needs to be adjusted.
+    $extension_period_pos = strrpos( $key_name, '.' );
+    if ( $extension_period_pos !== false ) {
+
+        // Split into constituting parts.
+        $part_1 = substr( $key_name, 0, $extension_period_pos );
+        $part_2 = substr( $key_name, $extension_period_pos + 1 );
+
+        // Construct new thumbnail name.
+        $thumbnail_key_name = ( $part_1 . '_thumbnail.' ) . $part_2;
+    }
+
+    return $thumbnail_key_name;
+}
+
+function dt_storage_connections_obj_upload_s3( $s3, $bucket, $key_name, $upload ) {
+    $response = null;
+    $upload_id = null;
+
+    try {
+
+        // Upload file in parts, to better manage memory leaks.
+        $result = $s3->createMultipartUpload( [
+            'Bucket' => $bucket,
+            'Key' => $key_name,
+            // 'StorageClass' => 'REDUCED_REDUNDANCY', // NB: Currently not supported by Backblaze
+            // 'ACL' => 'public-read', // NB: Currently not supported by Backblaze
+            'ContentType' => $upload['type'] ?? '',
+            'Metadata' => []
+        ] );
+        $upload_id = $result['UploadId'];
+
+    } catch ( Exception $e ) {
+        $response = false;
+    }
+
+    // Ensure no previous upload exceptions have been encountered.
+    if ( $response !== false ) {
+        $parts = [];
+
+        try {
+
+            // Start to upload file in partial chunks.
+            $filename = $upload['tmp_name'] ?? '';
+            $file = fopen( $filename, 'r' );
+            $part_number = 1;
+            while ( !feof( $file ) ) {
+                $result = $s3->uploadPart( [
+                    'Bucket' => $bucket,
+                    'Key' => $key_name,
+                    'UploadId' => $upload_id,
+                    'PartNumber' => $part_number,
+                    'Body' => fread( $file, 5 * 1024 * 1024 ),
+                ] );
+
+                $parts['Parts'][$part_number] = [
+                    'PartNumber' => $part_number,
+                    'ETag' => $result['ETag'],
+                ];
+
+                // Increment part count and force garbage collection, to better manage memory.
+                $part_number++;
+                gc_collect_cycles();
+            }
+            fclose( $file );
+
+        } catch ( Exception $e ) {
+            $response = false;
+            $result = $s3->abortMultipartUpload( [
+                'Bucket' => $bucket,
+                'Key' => $key_name,
+                'UploadId' => $upload_id
+            ] );
+        }
+
+        // Ensure no previous upload exceptions have been encountered.
+        if ( $response !== false ) {
+
+            try {
+
+                // Complete the multipart upload.
+                $result = $s3->completeMultipartUpload( [
+                    'Bucket' => $bucket,
+                    'Key' => $key_name,
+                    'UploadId' => $upload_id,
+                    'MultipartUpload' => $parts,
+                ] );
+                $response = $result['Key'] ?? false;
+
+            } catch ( Exception $e ) {
+                $response = false;
+            }
         }
     }
 
