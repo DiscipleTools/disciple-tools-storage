@@ -23,7 +23,7 @@ jobs:
       - name: Build project
         run: |
           mkdir disciple-tools-storage
-          cp -r disciple-tools-storage.php disciple-tools-storage-api.php disciple-tools-storage-filters.php admin rest-api version-control.json LICENSE SECURITY.md disciple-tools-storage/
+          cp -r disciple-tools-storage.php disciple-tools-storage-api.php disciple-tools-storage-filters.php vendor admin rest-api version-control.json LICENSE SECURITY.md disciple-tools-storage/
           zip -r disciple-tools-storage.zip disciple-tools-storage
       - name: Create Release
         id: create_release
