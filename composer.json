@@ -10,5 +10,16 @@
     },
     "require": {
         "aws/aws-sdk-php": "^3.301"
+    },
+    "scripts": {
+        "pre-autoload-dump": "Aws\\Script\\Composer\\Composer::removeUnusedServices"
+    },
+    "extra": {
+        "aws/aws-sdk-php": [
+          "S3",
+          "Kms",
+          "SSO",
+          "Sts"
+        ]
     }
 }
