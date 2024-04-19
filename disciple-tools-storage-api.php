@@ -50,6 +50,59 @@ class Disciple_Tools_Storage_API {
         return $random_string;
     }
 
+    public static function generate_image_thumbnail( $src, $content_type, $desired_width ) {
+        $thumbnail = null;
+        try {
+
+            // Read the original source image, by respective content type.
+            switch ( strtolower( trim( $content_type ) ) ) {
+                case 'image/gif':
+                    $source_image = imagecreatefromgif( $src );
+                    break;
+                case 'image/jpeg':
+                    $source_image = imagecreatefromjpeg( $src );
+                    break;
+                case 'image/png':
+                    $source_image = imagecreatefrompng( $src );
+                    break;
+                default:
+                    $source_image = null;
+                    break;
+            }
+
+            if ( !empty( $source_image ) ) {
+
+                // Determine sourced image dimensions.
+                $width = imagesx( $source_image );
+                $height = imagesy( $source_image );
+
+                // Find the "desired height" of this thumbnail, relative to the desired width.
+                $desired_height = floor( $height * ( $desired_width / $width ) );
+
+                // Create a new, "virtual" image.
+                $virtual_image = imagecreatetruecolor( $desired_width, $desired_height );
+
+                // Support background transparency.
+                $black = imagecolorallocate( $virtual_image, 0, 0, 0 );
+                imagecolortransparent( $virtual_image, $black );
+
+                // Copy source image at a resized size.
+                imagecopyresampled( $virtual_image, $source_image, 0, 0, 0, 0, $desired_width, $desired_height, $width, $height );
+
+                // Ensure there is a valid virtual image to be processed.
+                if ( !empty( $virtual_image ) ) {
+
+                    // Next, capture virtual image to be returned.
+                    $thumbnail = $virtual_image;
+                }
+            }
+        } catch ( Exception $e ) {
+            $thumbnail = null;
+        }
+
+        return $thumbnail;
+    }
+
     public static function validate_url( $url ): string {
         if ( !filter_var( $url, FILTER_VALIDATE_URL ) ) {
             $http = 'http://';
