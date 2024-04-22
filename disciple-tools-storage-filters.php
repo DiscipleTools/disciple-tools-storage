@@ -146,10 +146,26 @@ function dt_storage_connection_validation( $response, $connection_type_api, $det
                         'endpoint' => $details['endpoint']
                     ] );
 
-                    // A successful listing of buckets, shall constitute as a validated connection.
-                    $buckets = $s3->listBuckets( [] );
+                    // Attempt to upload an empty dummy file.
+                    $key = 'validated';
+                    $dummy_file = tmpfile();
+                    fwrite( $dummy_file, Disciple_Tools_Storage_API::generate_random_string( 24 ) );
+                    rewind( $dummy_file );
+                    $dummy_file_metadata = stream_get_meta_data( $dummy_file );
 
-                    $response = !is_wp_error( $buckets ) && !empty( $buckets['Buckets'] );
+                    $uploaded_dummy_key = dt_storage_connections_obj_upload_s3( $s3, $details['bucket'], $key, [
+                        'name' => $key,
+                        'full_path' => $key,
+                        'type' => 'text/plain',
+                        'tmp_name' => $dummy_file_metadata['uri'],
+                        'error' => 0,
+                        'size' => filesize( $dummy_file_metadata['uri'] )
+                    ] );
+
+                    fclose( $dummy_file );
+
+                    // A valid returned object key, shall constitute as a validated connection.
+                    $response = !is_wp_error( $uploaded_dummy_key ) && !empty( $uploaded_dummy_key );
 
                 }catch ( Exception $e ) {
                     $response = false;
