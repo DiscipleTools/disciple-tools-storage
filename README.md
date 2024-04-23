@@ -28,11 +28,11 @@ A detailed description of the typical usage flow for creating and using connecti
 
 - In order to use the new D.T Storage Plugin, ensure PHP version 8.1 or greater has been installed.
 
-![0](/DiscipleTools/disciple-tools-storage/raw/master/documentation/readme/imgs/0.png)
+![0](/documentation/readme/imgs/0.png)
 
 - Once D.T Storage Plugin has been installed, create a new connection.
 
-![1](/DiscipleTools/disciple-tools-storage/raw/master/documentation/readme/imgs/1.png)
+![1](/documentation/readme/imgs/1.png)
 
 - The following connection types (3rd Party Object Storage Services) are currently supported:
   - [AWS S3](https://aws.amazon.com/s3/)
@@ -42,31 +42,31 @@ A detailed description of the typical usage flow for creating and using connecti
 
 - Enter required connection details; ensuring specified bucket has already been created within 3rd party object storage service.
 
-![2](/DiscipleTools/disciple-tools-storage/raw/master/documentation/readme/imgs/2.png)
+![2](/documentation/readme/imgs/2.png)
 
 > If no endpoint protocol scheme is specified; then https:// will be used.
 
 - Test connection, to ensure supplied credentials are valid.
 
-![3](/DiscipleTools/disciple-tools-storage/raw/master/documentation/readme/imgs/3.png)
+![3](/documentation/readme/imgs/3.png)
 
 - The following will be shown for failed connection tests.
 
-![4](/DiscipleTools/disciple-tools-storage/raw/master/documentation/readme/imgs/4.png)
+![4](/documentation/readme/imgs/4.png)
 
 > Some important things to note when working with Backblaze services:
 >
 > - Ensure sufficient CORS permissions have been applied to target Backblaze bucket, as shown below:
 
-![5](/DiscipleTools/disciple-tools-storage/raw/master/documentation/readme/imgs/5.png)
+![5](/documentation/readme/imgs/5.png)
 
 - Once new connection has been validated and saved, navigate to Storage Settings section within D.T General Settings and select connection to be used for the default media storage within D.T.
 
-![6](/DiscipleTools/disciple-tools-storage/raw/master/documentation/readme/imgs/6.png)
+![6](/documentation/readme/imgs/6.png)
 
 - Currently, storage connections are only available when editing user profile pictures.
 
-![7](/DiscipleTools/disciple-tools-storage/raw/master/documentation/readme/imgs/7.png)
+![7](/documentation/readme/imgs/7.png)
 
 ## Requirements
 
