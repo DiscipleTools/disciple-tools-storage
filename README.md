@@ -25,8 +25,8 @@ DT_Storage::upload_file( string $key_prefix = '', array $upload = [], string $ex
 ![1](/documentation/readme/imgs/1.png)
 
 - The following connection types (3rd Party Object Storage Services) are currently supported:
+  - [BackBlaze](https://www.backblaze.com/) (Recommened) - See our [BackBlaze setup notes](https://github.com/DiscipleTools/disciple-tools-storage/wiki/S3-Storage-Services#backblaze)  
   - [AWS S3](https://aws.amazon.com/s3/)
-  - [BackBlaze](https://www.backblaze.com/) - Set our [BackBlaze setup notes](https://github.com/DiscipleTools/disciple-tools-storage/wiki/S3-Storage-Services#backblaze)
   - [MinIO](https://min.io/)
 
 
