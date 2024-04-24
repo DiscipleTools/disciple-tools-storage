@@ -8,6 +8,9 @@ Disciple.Tools - Storage is intended to help manage connections with remote obje
 
 Provide the ability to store/retrieve all storage content within 3rd party object storage services; offering greater security.
 
+## Security 
+Keep your files in a private S3 Bucket, protected from being findable from the web. This integration with Disciple.Tools creates short lived links (24 hours) to display images.
+
 ## API
 
 See the [API Documentation](https://github.com/DiscipleTools/disciple-tools-storage/wiki/API) for more information.
