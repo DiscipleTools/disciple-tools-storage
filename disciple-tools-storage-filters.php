@@ -186,7 +186,7 @@ function dt_storage_connections_obj_upload( $response, $storage_connection_id, $
     if ( isset( $args['auto_generate_key'] ) && !$args['auto_generate_key'] && !empty( $args['default_key'] ) ) {
         $key = $args['default_key'];
     } else {
-        $key = $key_prefix . Disciple_Tools_Storage_API::generate_random_string( 112 );
+        $key = $key_prefix . Disciple_Tools_Storage_API::generate_random_string( 64 );
     }
 
     // If required, capture uploading file's extension.
@@ -219,6 +219,12 @@ function dt_storage_connections_obj_upload( $response, $storage_connection_id, $
                     $s3 = null;
                     $response = true;
                     $bucket = $config['bucket'];
+
+                    //Create a folder for the current site in case a bucket is shared between multiple sites.
+                    $dt_site_id = get_option( 'dt_site_id' );
+                    $site_key = substr( $dt_site_id, 0, 30 );
+                    $key = $site_key . '/' . $key;
+
 
                     // Generate complete file key name to be used moving forward.
                     $key_name = ( isset( $storage_connection_type['prefix_bucket_name_to_obj_key'] ) && $storage_connection_type['prefix_bucket_name_to_obj_key'] ) ? ( $bucket .'/'. $key ) : $key;
