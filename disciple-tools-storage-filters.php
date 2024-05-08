@@ -83,6 +83,19 @@ class DT_Storage {
     public static function validate_connection_details( $connection_type_api, $details ): bool {
         return dt_storage_connection_validation( false, $connection_type_api, $details );
     }
+
+    /**
+     * @param string $key
+     * @return false|array
+     */
+    public static function delete_file( string $key ) {
+        $connection = self::get_connection();
+        if ( !empty( $connection ) ) {
+            return dt_storage_connections_obj_delete( null, $connection->id, $key );
+        }
+
+        return false;
+    }
 }
 
 
@@ -501,6 +514,98 @@ function dt_storage_connections_obj_content( $key, $storage_connection_id, $args
             }
         }
     }
+}
+
+add_filter( 'dt_storage_connections_obj_delete', 'dt_storage_connections_obj_delete', 10, 4 );
+function dt_storage_connections_obj_delete( $response, $storage_connection_id, $key, $args = [] ) {
+
+    // Ensure required storage connection settings, are available.
+    $storage_connection_types = apply_filters( 'dt_storage_connection_types', [] );
+    $storage_connection_filter = apply_filters( 'dt_storage_connections_by_id', [], $storage_connection_id );
+    $storage_connection = null;
+    if ( !empty( $storage_connection_filter ) ) {
+        $storage_connection = $storage_connection_filter[0];
+    }
+
+    if ( !empty( $storage_connection ) && isset( $storage_connection_types[$storage_connection['type']] ) ) {
+        $storage_connection_type = $storage_connection_types[$storage_connection['type']];
+
+        // Retrieve file (by specified key) accordingly, based on associated connection api.
+        switch ( $storage_connection_type['api'] ) {
+            case 's3':
+                $config = (array) $storage_connection[$storage_connection['type']];
+                if ( isset( $config['access_key'], $config['secret_access_key'], $config['region'], $config['bucket'], $config['endpoint'] ) ) {
+
+                    try {
+
+                        require_once( 'vendor/autoload.php' );
+
+                        // Ensure endpoint reference has the correct protocol schema.
+                        $endpoint = Disciple_Tools_Storage_API::validate_url( $config['endpoint'] );
+
+                        // Instantiate required aws s3 client object.
+                        $s3 = new Aws\S3\S3Client( [
+                            'region' => $config['region'],
+                            'version' => 'latest',
+                            'credentials' => [
+                                'key' => $config['access_key'],
+                                'secret' => $config['secret_access_key']
+                            ],
+                            'endpoint' => $endpoint
+                        ] );
+                        $bucket = $config['bucket'];
+
+                        // Generate complete file key name to be used moving forward.
+                        $key_name = ( isset( $storage_connection_type['prefix_bucket_name_to_obj_key'] ) && $storage_connection_type['prefix_bucket_name_to_obj_key'] ) ? ( $bucket .'/'. $key ) : $key;
+
+                        // Action object deletion.
+                        $result = $s3->deleteObject( [
+                            'Bucket' => $bucket,
+                            'Key' => $key_name
+                        ] );
+
+                        if ( !is_array( $response ) ) {
+                            $response = [];
+                        }
+
+                        $response['file_key'] = $key;
+                        $response['file_deleted'] = ( isset( $result['DeleteMarker'] ) && ( $result['DeleteMarker'] === true ) );
+
+                        // Check for and remove associated image based thumbnails.
+                        $extension_period_pos = strrpos( $key_name, '.' );
+                        if ( $extension_period_pos !== false ) {
+                            $extension = substr( $key_name, $extension_period_pos + 1 );
+                            if ( in_array( $extension, [ 'png', 'gif', 'jpeg', 'jpg' ] ) ) {
+
+                                try {
+
+                                    // Generate corresponding thumbnail key name and action delete.
+                                    $thumbnail_key = dt_generate_thumbnail_key_name( $key_name );
+                                    $response['thumbnail_key'] = $thumbnail_key;
+                                    $result = $s3->deleteObject( [
+                                        'Bucket' => $bucket,
+                                        'Key' => $thumbnail_key
+                                    ] );
+
+                                    $response['thumbnail_deleted'] = ( isset( $result['DeleteMarker'] ) && ( $result['DeleteMarker'] === true ) );
+
+                                } catch ( Exception $thumb_e ) {
+                                    $response['thumbnail_deleted'] = false;
+                                }
+                            }
+                        }
+                    } catch ( Exception $e ) {
+                        $response = null;
+                    }
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    return $response;
 }
 
 
