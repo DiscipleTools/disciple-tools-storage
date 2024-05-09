@@ -5,7 +5,7 @@
  * Description: Disciple.Tools - Storage is intended to help manage connections with remote object storage services, such as AWS S3.
  * Text Domain: disciple-tools-storage
  * Domain Path: /languages
- * Version:  1.2.0
+ * Version:  1.3.0
  * Author URI: https://github.com/DiscipleTools
  * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-storage
  * Requires at least: 4.7.0
