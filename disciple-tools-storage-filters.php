@@ -236,8 +236,15 @@ function dt_storage_connections_obj_upload( $response, $storage_connection_id, $
                     //Create a folder for the current site in case a bucket is shared between multiple sites.
                     $dt_site_id = get_option( 'dt_site_id' );
                     $site_key = substr( $dt_site_id, 0, 30 );
-                    $key = $site_key . '/' . $key;
 
+                    // Ensure duplicate site id prefixes are handled accordingly.
+                    $site_id_prefix = $site_key . '/';
+                    $site_id_dup_count = substr_count( $key, $site_id_prefix );
+                    if ( $site_id_dup_count === 0 ) {
+                        $key = $site_id_prefix . $key;
+                    } elseif ( $site_id_dup_count > 1 ) {
+                        $key = $site_id_prefix . str_replace( $site_id_prefix, '', $key, $site_id_dup_count );
+                    }
 
                     // Generate complete file key name to be used moving forward.
                     $key_name = ( isset( $storage_connection_type['prefix_bucket_name_to_obj_key'] ) && $storage_connection_type['prefix_bucket_name_to_obj_key'] ) ? ( $bucket .'/'. $key ) : $key;
