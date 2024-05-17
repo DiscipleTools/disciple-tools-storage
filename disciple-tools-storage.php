@@ -56,7 +56,7 @@ function disciple_tools_storage() {
     return Disciple_Tools_Storage::instance();
 
 }
-add_action( 'after_setup_theme', 'disciple_tools_storage', 20 );
+add_action( 'disciple_tools_load_plugins', 'disciple_tools_storage', 20 );
 
 //register the D.T Plugin
 add_filter( 'dt_plugins', function ( $plugins ){
