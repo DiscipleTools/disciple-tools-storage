@@ -77,6 +77,20 @@ class Disciple_Tools_Storage_Menu {
         ?>
         <div class="wrap">
             <h2>DISCIPLE TOOLS : <?php echo esc_html( $this->page_title ) ?></h2>
+            <div style="background-color: rgba(142,195,81,0.2); border-radius: 5px; padding: 1em 2em; margin: 1em 0">
+              <div style="display: flex; grid-gap: 1em">
+                <div style="display: flex; align-items: center">
+                  <img style="width: 2em; filter: invert(52%) sepia(77%) saturate(383%) hue-rotate(73deg) brightness(98%) contrast(83%);"
+                       src="<?php echo esc_url( plugin_dir_url( __FILE__ ) . 'exclamation-circle.svg' ); ?>" alt="Exclamation Circle"/>
+                </div>
+                <div style="display: flex; align-items: center">
+                  <p>
+                    Need Help? Check out the Storage plugin's <a href="https://disciple.tools/docs/storage/" target="_blank">documentation</a> and <a href="https://community.disciple.tools/category/17/d-t-storage" target="_blank">forum page</a>.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <h2 class="nav-tab-wrapper">
                 <!--<a href="<?php echo esc_attr( $link ) . 'general' ?>"
                    class="nav-tab <?php echo esc_html( ( $tab == 'general' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>">General</a>-->
