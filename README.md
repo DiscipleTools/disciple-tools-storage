@@ -4,6 +4,10 @@
 
 Disciple.Tools - Storage is intended to help manage connections with remote object storage services, such as AWS S3, Backblaze, etc.
 
+## Community
+
+Need help or have a question? Join the D.T Forum: https://community.disciple.tools/category/17/d-t-storage
+
 ## Purpose
 
 Provide the ability to store/retrieve all storage content within 3rd party object storage services; offering greater security.
@@ -28,7 +32,7 @@ DT_Storage::upload_file( string $key_prefix = '', array $upload = [], string $ex
 ![1](/documentation/readme/imgs/1.png)
 
 - The following connection types (3rd Party Object Storage Services) are currently supported:
-  - [BackBlaze](https://www.backblaze.com/) (Recommened) - See our [BackBlaze setup notes](https://github.com/DiscipleTools/disciple-tools-storage/wiki/S3-Storage-Services#backblaze)  
+  - [BackBlaze](https://www.backblaze.com/) (Recommened) - See our [BackBlaze setup notes](https://disciple.tools/docs/storage/#backblaze)
   - [AWS S3](https://aws.amazon.com/s3/)
   - [MinIO](https://min.io/)
 
@@ -44,9 +48,6 @@ DT_Storage::upload_file( string $key_prefix = '', array $upload = [], string $ex
 
 ![6](/documentation/readme/imgs/6.png)
 
-- Currently, storage connections are only available when editing user profile pictures.
-
-![7](/documentation/readme/imgs/7.png)
 
 ## Requirements
 
