@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Disciple.Tools - Storage
  * Plugin URI: https://github.com/DiscipleTools/disciple-tools-storage
- * Description: Disciple.Tools - Storage is intended to help manage connections with remote object storage services, such as AWS S3.
+ * Description: Upgrade Disciple.Tools with contact and user pictures using a storage service (AWS S3, Backblaze B2, etc).
  * Text Domain: disciple-tools-storage
  * Domain Path: /languages
  * Version:  1.3.1

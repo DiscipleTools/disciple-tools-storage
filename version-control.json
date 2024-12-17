@@ -23,7 +23,7 @@
   },
   "icon": "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-storage/master/documentation/icon.png",
   "sections": {
-    "description": "Disciple.Tools - Storage is intended to help manage connections with remote object storage services, such as AWS S3, Backblaze, etc.",
+    "description": "Upgrade Disciple.Tools with contact and user pictures using a storage service (AWS S3, Backblaze B2, etc).",
     "installation": "(Required) You must have Disciple.Tools Theme installed before using this plugin. Once Disciple.Tools is installed, you can use the normal Plugin system to install the plugin.",
     "changelog": ""
   }
