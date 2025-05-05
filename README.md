@@ -12,7 +12,7 @@ Need help or have a question? Join the D.T Forum: https://community.disciple.too
 
 Provide the ability to store/retrieve all storage content within 3rd party object storage services; offering greater security.
 
-## Security 
+## Security
 Keep your files in a private S3 Bucket, protected from being findable from the web. This integration with Disciple.Tools creates short lived links (24 hours) to display images.
 
 ## API
@@ -33,7 +33,7 @@ DT_Storage::upload_file( string $key_prefix = '', array $upload = [], string $ex
 
 - The following connection types (3rd Party Object Storage Services) are currently supported:
   - [BackBlaze](https://www.backblaze.com/) (Recommened) - See our [BackBlaze setup notes](https://disciple.tools/docs/storage/#backblaze)
-  - [AWS S3](https://aws.amazon.com/s3/)
+  - [AWS S3](https://aws.amazon.com/s3/) - See AWS S3 setup instructions [here](/SETUP_AWS_S3.md)
   - [MinIO](https://min.io/)
 
 
