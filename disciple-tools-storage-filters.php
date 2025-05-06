@@ -49,6 +49,18 @@ class DT_Storage {
         return '';
     }
 
+        /**
+     * @param string $key
+     * @return string
+     */
+    public static function get_large_thumbnail_url( string $key ): string {
+        $connection = self::get_connection();
+        if ( !empty( $connection ) ) {
+            return dt_storage_connections_obj_url( null, $connection->id, dt_generate_large_thumbnail_key_name( $key ), [ 'keep_alive' => '+24 hours' ] );
+        }
+        return '';
+    }
+
     /**
      * @param string $key_prefix like 'users', 'contacts', 'comments
      * @param array $upload
@@ -58,6 +70,7 @@ class DT_Storage {
     public static function upload_file( string $key_prefix = '', array $upload = [], string $existing_key = '', array $args = [] ){
         $key_prefix = trailingslashit( $key_prefix );
         $connection = self::get_connection();
+
         $merged_args = array_merge( $args, [
             'auto_generate_key' => empty( $existing_key ),
             'include_extension' => empty( $existing_key ),
@@ -67,7 +80,13 @@ class DT_Storage {
                 'image/jpeg',
                 'image/png'
             ] ),
-            'thumbnails_desired_width' => 100 // Heights are automatically calculated, based on specified width.
+            'thumbnails_desired_width' => 100, // Heights are automatically calculated, based on specified width.
+            'auto_generate_large_thumbnails' => in_array( strtolower( trim( $upload['type'] ?? '' ) ), [
+                'image/gif',
+                'image/jpeg',
+                'image/png'
+            ] ),
+            'large_thumbnails_desired_width' => 1200 // Heights are automatically calculated, based on specified width.
         ] );
         if ( !empty( $connection ) ) {
             return dt_storage_connections_obj_upload( null, $connection->id, $key_prefix, $upload, $merged_args );
@@ -195,6 +214,9 @@ function dt_storage_connection_validation( $response, $connection_type_api, $det
 add_filter( 'dt_storage_connections_obj_upload', 'dt_storage_connections_obj_upload', 10, 5 );
 function dt_storage_connections_obj_upload( $response, $storage_connection_id, $key_prefix = '', $upload = [], $args = [] ) {
 
+    // Ensure the original file is used for generating the large thumbnail.
+    $original_tmp_name = $upload['tmp_name']; // Save the original file path.
+
     // If required, auto-generate key to be used for object upload storage, along with any prefixes & suffixes.
     if ( isset( $args['auto_generate_key'] ) && !$args['auto_generate_key'] && !empty( $args['default_key'] ) ) {
         $key = $args['default_key'];
@@ -312,10 +334,65 @@ function dt_storage_connections_obj_upload( $response, $storage_connection_id, $
                             }
                         }
 
+
+
+                        $uploaded_large_thumbnail_key = null;
+                        if ( isset( $args['auto_generate_large_thumbnails'] ) && $args['auto_generate_large_thumbnails'] ) {
+                            $large_thumbnail = Disciple_Tools_Storage_API::generate_image_thumbnail(
+                                $original_tmp_name, // Use the original file here.
+                                $upload['type'] ?? '',
+                                $args['large_thumbnails_desired_width'] ?? 1200
+                            );
+                            if ( !empty( $large_thumbnail ) ) {
+
+                                // Generate temp file to function as a reference point for the large thumbnail.
+                                $tmp_large_image = tmpfile();
+                                $tmp_large_image_metadata = stream_get_meta_data( $tmp_large_image );
+
+                                // Populate temp file, accordingly, by image content type.
+                                $large_thumbnail_tmp_name = null;
+                                switch ( strtolower( trim( $upload['type'] ?? '' ) ) ) {
+                                    case 'image/gif':
+                                        if ( imagegif( $large_thumbnail, $tmp_large_image ) ) {
+                                            $large_thumbnail_tmp_name = $tmp_large_image_metadata['uri'];
+                                        }
+                                        break;
+                                    case 'image/jpeg':
+                                        if ( imagejpeg( $large_thumbnail, $tmp_large_image ) ) {
+                                            $large_thumbnail_tmp_name = $tmp_large_image_metadata['uri'];
+                                        }
+                                        break;
+                                    case 'image/png':
+                                        if ( imagepng( $large_thumbnail, $tmp_large_image ) ) {
+                                            $large_thumbnail_tmp_name = $tmp_large_image_metadata['uri'];
+                                        }
+                                        break;
+                                    default:
+                                        break;
+                                }
+
+                                // If we have a valid large thumbnail temp file, proceed with upload attempt.
+                                if ( !empty( $large_thumbnail_tmp_name ) ) {
+
+                                    // Adjust reference to temp file, for recently generated large thumbnail.
+                                    $upload['tmp_name'] = $large_thumbnail_tmp_name;
+
+                                    // Upload large thumbnail.
+                                    $uploaded_large_thumbnail_key = dt_storage_connections_obj_upload_s3(
+                                        $s3,
+                                        $bucket,
+                                        dt_generate_large_thumbnail_key_name( $key_name ),
+                                        $upload
+                                    );
+                                }
+                            }
+                        }
+
                         // Finally, capture valid uploaded keys.
                         $response = [
                             'uploaded_key' => ! empty( $uploaded_key ) ? $uploaded_key : null,
-                            'uploaded_thumbnail_key' => ! empty( $uploaded_thumbnail_key ) ? $uploaded_thumbnail_key : null
+                            'uploaded_thumbnail_key' => ! empty( $uploaded_thumbnail_key ) ? $uploaded_thumbnail_key : null,
+                            'uploaded_large_thumbnail_key' => ! empty( $uploaded_large_thumbnail_key ) ? $uploaded_large_thumbnail_key : null
                         ];
                     } catch ( Exception $e ) {
                         $response = false;
@@ -346,6 +423,24 @@ function dt_generate_thumbnail_key_name( $key_name ): string {
     }
 
     return $thumbnail_key_name;
+}
+
+function dt_generate_large_thumbnail_key_name( $key_name ): string {
+    $large_thumbnail_key_name = $key_name . '_large_thumbnail';
+
+    // Determine if position of _large_thumbnail string needs to be adjusted.
+    $extension_period_pos = strrpos( $key_name, '.' );
+    if ( $extension_period_pos !== false ) {
+
+        // Split into constituting parts.
+        $part_1 = substr( $key_name, 0, $extension_period_pos );
+        $part_2 = substr( $key_name, $extension_period_pos + 1 );
+
+        // Construct new large thumbnail name.
+        $large_thumbnail_key_name = ( $part_1 . '_large_thumbnail.' ) . $part_2;
+    }
+
+    return $large_thumbnail_key_name;
 }
 
 function dt_storage_connections_obj_upload_s3( $s3, $bucket, $key_name, $upload ) {
