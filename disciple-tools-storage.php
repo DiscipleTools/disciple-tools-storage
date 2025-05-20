@@ -5,7 +5,7 @@
  * Description: Upgrade Disciple.Tools with contact and user pictures using a storage service (AWS S3, Backblaze B2, etc).
  * Text Domain: disciple-tools-storage
  * Domain Path: /languages
- * Version:  1.3.1
+ * Version:  1.4.0
  * Author URI: https://github.com/DiscipleTools
  * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-storage
  * Requires at least: 4.7.0
