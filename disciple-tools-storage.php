@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Disciple.Tools - Storage
  * Plugin URI: https://github.com/DiscipleTools/disciple-tools-storage
- * Description: Upgrade Disciple.Tools with contact and user pictures using a storage service (AWS S3, Backblaze B2, etc).
+ * Description: DELETE ME - I'm a deprecated plugin
  * Text Domain: disciple-tools-storage
  * Domain Path: /languages
  * Version:  1.4.0
@@ -54,20 +54,20 @@ function disciple_tools_storage() {
     }
 
     return Disciple_Tools_Storage::instance();
-
 }
-add_action( 'after_setup_theme', 'disciple_tools_storage', 20 );
+
+//add_action( 'after_setup_theme', 'disciple_tools_storage', 20 );
 
 //register the D.T Plugin
-add_filter( 'dt_plugins', function ( $plugins ){
-    $plugin_data = get_file_data( __FILE__, [ 'Version' => 'Version', 'Plugin Name' => 'Plugin Name' ], false );
-    $plugins['disciple-tools-storage'] = [
-        'plugin_url' => trailingslashit( plugin_dir_url( __FILE__ ) ),
-        'version' => $plugin_data['Version'] ?? null,
-        'name' => $plugin_data['Plugin Name'] ?? null,
-    ];
-    return $plugins;
-});
+//add_filter( 'dt_plugins', function ( $plugins ){
+//    $plugin_data = get_file_data( __FILE__, [ 'Version' => 'Version', 'Plugin Name' => 'Plugin Name' ], false );
+//    $plugins['disciple-tools-storage'] = [
+//        'plugin_url' => trailingslashit( plugin_dir_url( __FILE__ ) ),
+//        'version' => $plugin_data['Version'] ?? null,
+//        'name' => $plugin_data['Plugin Name'] ?? null,
+//    ];
+//    return $plugins;
+//});
 
 /**
  * Singleton class for setting up the plugin.
