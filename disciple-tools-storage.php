@@ -5,7 +5,7 @@
  * Description: DELETE ME - I'm a deprecated plugin
  * Text Domain: disciple-tools-storage
  * Domain Path: /languages
- * Version:  1.4.0
+ * Version:  1.5.0
  * Author URI: https://github.com/DiscipleTools
  * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-storage
  * Requires at least: 4.7.0
